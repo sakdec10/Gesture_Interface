@@ -14,10 +14,10 @@ def main():
     cap.set(3, 1280) 
     cap.set(4, 720)
 
-    detector = HandDetector(detectionCon=0.8, maxHands= 1)
+    detector = HandDetector(detectionCon=0.3, maxHands= 1)
     yellow = [0,255,255]
     red = [0,0,255]
-    drawPoints = [[]]
+    drawPoints = [[]]                       #drawPoints array of array to store multiple points of the line
     pointNum = -1
     drawCase = False
 
@@ -35,17 +35,22 @@ def main():
         if hands:
             lmlist = hands[0]["lmList"]
             indexFinger = lmlist[8][0], lmlist[8][1]
+            wrist = lmlist[0][0], lmlist[0][1]
             fingers = detector.fingersUp(hands[0])
 
+            #if all fingers are closed then clear the screen
             if fingers == [0, 0, 0, 0 ,0]:
                 drawPoints.clear()
                 pointNum = -1
 
-            if fingers == [0, 1, 1, 0 ,0]:
+            #if 2 fingers are open then draw a circle on the index finger
+            if fingers == [0, 1, 1, 0 ,0] and  wrist[1] > indexFinger[1]:
                 cv.circle(img, indexFinger, 10, yellow, 2)
             
-            if fingers == [0, 1, 0, 0 ,0]:
+            #if index finger is open then draw a line
+            elif fingers == [0, 1, 0, 0 ,0] and  wrist[1] > indexFinger[1]:
                 cv.circle(img, indexFinger, 10, yellow, 2)
+                #making a new array of points for a new line
                 if drawCase == False:
                     drawCase = True
                     pointNum = pointNum + 1
@@ -57,6 +62,7 @@ def main():
         
         c = cv.waitKey(1)
         
+        #drawing the lines
         for i in range(len(drawPoints)):
             for j in range(len(drawPoints[i])):
                 if j!=0:
@@ -68,6 +74,7 @@ def main():
             break
    
     cv.destroyAllWindows()
+
 if __name__ == '__main__':
     main()
 

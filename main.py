@@ -5,6 +5,12 @@ import mediapipe as mp
 
 def main():
     cap = cv.VideoCapture(0)
+
+    #camera not opened
+    if not cap.isOpened():
+        print("Cannot open camera")
+        exit()
+    
     cap.set(3, 1280) 
     cap.set(4, 720)
 
@@ -14,16 +20,26 @@ def main():
     drawPoints = [[]]
     pointNum = -1
     drawCase = False
-    printed = -1
 
     while(True):
         success, img = cap.read()
+
+        #camera not opened
+        if img is None:
+            print("Cannot open camera")
+            exit()
+
         hands, img = detector.findHands(img)
-        
+
+
         if hands:
             lmlist = hands[0]["lmList"]
             indexFinger = lmlist[8][0], lmlist[8][1]
             fingers = detector.fingersUp(hands[0])
+
+            if fingers == [0, 0, 0, 0 ,0]:
+                drawPoints.clear()
+                pointNum = -1
 
             if fingers == [0, 1, 1, 0 ,0]:
                 cv.circle(img, indexFinger, 10, yellow, 2)
@@ -35,6 +51,7 @@ def main():
                     pointNum = pointNum + 1
                     drawPoints.append([])
                 drawPoints[pointNum].append(indexFinger)
+            
             else:
                 drawCase = False
         

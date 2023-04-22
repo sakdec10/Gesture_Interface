@@ -2,6 +2,7 @@ import cv2 as cv
 import numpy as np
 from cvzone.HandTrackingModule import HandDetector
 import mediapipe as mp
+import whiteboard as wh
 
 def main():
     cap = cv.VideoCapture(0)
@@ -20,6 +21,8 @@ def main():
     drawPoints = [[]]                       #drawPoints array of array to store multiple points of the line
     pointNum = -1
     drawCase = False
+    wBoard = False
+    counter = 0
 
     while(True):
         success, img = cap.read()
@@ -38,13 +41,17 @@ def main():
             wrist = lmlist[0][0], lmlist[0][1]
             fingers = detector.fingersUp(hands[0])
 
+            if (fingers == [0, 1, 0 , 0, 1] and wrist[1] > indexFinger[1]) and counter >= 10:
+                counter = wh.generateWhiteBoard(cap,detector)
+            
+
             #if all fingers are closed then clear the screen
-            if fingers == [0, 0, 0, 0 ,0]:
+            elif fingers == [0, 0, 0, 0 ,0]:
                 drawPoints.clear()
                 pointNum = -1
 
             #if 2 fingers are open then draw a circle on the index finger
-            if fingers == [0, 1, 1, 0 ,0] and  wrist[1] > indexFinger[1]:
+            elif fingers == [0, 1, 1, 0 ,0] and  wrist[1] > indexFinger[1]:
                 cv.circle(img, indexFinger, 10, yellow, 2)
             
             #if index finger is open then draw a line
@@ -69,11 +76,14 @@ def main():
                     cv.line(img, drawPoints[i][j-1], drawPoints[i][j], red, 12)
         
         cv.imshow("Image", cv.flip(img, 1))
+        counter += 1
+        print(counter)
         
         if c == 27:
             break
-   
+    
     cv.destroyAllWindows()
+
 
 if __name__ == '__main__':
     main()

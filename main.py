@@ -15,14 +15,13 @@ def main():
     cap.set(3, 1280) 
     cap.set(4, 720)
 
-    detector = HandDetector(detectionCon=0.3, maxHands= 1)
+    detector = HandDetector(detectionCon=0.7, maxHands= 1)
     yellow = [0,255,255]
     red = [0,0,255]
     drawPoints = [[]]                       #drawPoints array of array to store multiple points of the line
     pointNum = -1
     drawCase = False
-    wBoard = False
-    counter = 0
+    counter = 10
 
     while(True):
         success, img = cap.read()
@@ -41,7 +40,10 @@ def main():
             wrist = lmlist[0][0], lmlist[0][1]
             fingers = detector.fingersUp(hands[0])
 
-            if (fingers == [0, 1, 0 , 0, 1] and wrist[1] > indexFinger[1]) and counter >= 10:
+            if (fingers == [0, 1, 0 , 0, 1] and wrist[1] > indexFinger[1]) and counter >= 20:
+                drawPoints.clear()
+                pointNum = -1
+                drawCase = False
                 counter = wh.generateWhiteBoard(cap,detector)
             
 
@@ -49,6 +51,7 @@ def main():
             elif fingers == [0, 0, 0, 0 ,0]:
                 drawPoints.clear()
                 pointNum = -1
+                drawCase = False
 
             #if 2 fingers are open then draw a circle on the index finger
             elif fingers == [0, 1, 1, 0 ,0] and  wrist[1] > indexFinger[1]:
@@ -77,7 +80,7 @@ def main():
         
         cv.imshow("Image", cv.flip(img, 1))
         counter += 1
-        print(counter)
+        # print(counter)
         
         if c == 27:
             break

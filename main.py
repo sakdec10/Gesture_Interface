@@ -7,6 +7,8 @@ import whiteboard as wh
 def main():
     cap = cv.VideoCapture(0)
 
+    WB_DELAY = 20
+
     #camera not opened
     if not cap.isOpened():
         print("Cannot open camera")
@@ -40,12 +42,12 @@ def main():
             wrist = lmlist[0][0], lmlist[0][1]
             fingers = detector.fingersUp(hands[0])
 
-            if (fingers == [0, 1, 0 , 0, 1] and wrist[1] > indexFinger[1]) and counter >= 20:
+            #whiteboard trigger
+            if (fingers == [0, 1, 0 , 0, 1] and wrist[1] > indexFinger[1]) and counter >= WB_DELAY:
                 drawPoints.clear()
                 pointNum = -1
                 drawCase = False
-                counter = wh.generateWhiteBoard(cap,detector)
-            
+                counter = wh.generateWhiteBoard(cap,detector, WB_DELAY)
 
             #if all fingers are closed then clear the screen
             elif fingers == [0, 0, 0, 0 ,0]:

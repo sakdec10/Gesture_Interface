@@ -4,8 +4,9 @@ from cvzone.HandTrackingModule import HandDetector
 import mediapipe as mp
 import whiteboard as wh
 
-def generateWhiteBoard(cap,detector) -> int:
+def generateWhiteBoard(cap,detector, WB_DELAY) -> int:
 
+    #webcam height and width
     hs, ws = 120, 230
 
     #camera not opened
@@ -44,7 +45,8 @@ def generateWhiteBoard(cap,detector) -> int:
             wrist = lmlist[0][0], lmlist[0][1]
             fingers = detector.fingersUp(hands[0])
 
-            if (fingers == [0, 1, 0 , 0, 1] and wrist[1] > indexFinger[1]) and counter >= 20:
+            #close whiteboard trigger
+            if (fingers == [0, 1, 0 , 0, 1] and wrist[1] > indexFinger[1]) and counter >= WB_DELAY:
                 cv.destroyWindow("Whiteboard")
                 return 0
             
@@ -90,6 +92,6 @@ if __name__ == '__main__':
     cap.set(3, 1280) 
     cap.set(4, 720)
     detector = HandDetector(detectionCon=0.3, maxHands= 1)
-    generateWhiteBoard(cap, detector)
+    generateWhiteBoard(cap, detector, 20)
 
 

@@ -4,29 +4,32 @@ from cvzone.HandTrackingModule import HandDetector
 import mediapipe as mp
 import whiteboard as wh
 
-def main():
-    cap = cv.VideoCapture(0)
+def generateWhiteBoard(cap,detector, WB_DELAY) -> int:
 
-    WB_DELAY = 20
+    #webcam height and width
+    hs, ws = 120, 230
 
     #camera not opened
     if not cap.isOpened():
         print("Cannot open camera")
         exit()
-    
-    cap.set(3, 1280) 
-    cap.set(4, 720)
 
-    detector = HandDetector(detectionCon=0.7, maxHands= 1)
     yellow = [0,255,255]
     red = [0,0,255]
     drawPoints = [[]]                       #drawPoints array of array to store multiple points of the line
     pointNum = -1
     drawCase = False
-    counter = 10
+    counter = 0
 
     while(True):
         success, img = cap.read()
+        #Declaring a whiteboard
+        wBoard = np.ones((720, 1280, 3), dtype = np.uint8)
+        wBoard = wBoard * 255
+
+        #Adding webcam image to whiteboard
+        imgSmall = cv.resize(img, (ws, hs))
+        wBoard[0:hs,1280-ws:1280] = imgSmall
 
         #camera not opened
         if img is None:
@@ -42,33 +45,30 @@ def main():
             wrist = lmlist[0][0], lmlist[0][1]
             fingers = detector.fingersUp(hands[0])
 
-            #whiteboard trigger
+            #close whiteboard trigger
             if (fingers == [0, 1, 0 , 0, 1] and wrist[1] > indexFinger[1]) and counter >= WB_DELAY:
-                drawPoints.clear()
-                pointNum = -1
-                drawCase = False
-                counter = wh.generateWhiteBoard(cap,detector, WB_DELAY)
-
+                cv.destroyWindow("Whiteboard")
+                return 0
+            
             #if all fingers are closed then clear the screen
             elif fingers == [0, 0, 0, 0 ,0]:
+                drawCase = False
                 drawPoints.clear()
                 pointNum = -1
-                drawCase = False
-
+            
             #if 2 fingers are open then draw a circle on the index finger
             elif fingers == [0, 1, 1, 0 ,0] and  wrist[1] > indexFinger[1]:
-                cv.circle(img, indexFinger, 10, yellow, 2)
+                cv.circle(wBoard, indexFinger, 10, red, cv.FILLED)
             
             #if index finger is open then draw a line
             elif fingers == [0, 1, 0, 0 ,0] and  wrist[1] > indexFinger[1]:
-                cv.circle(img, indexFinger, 10, yellow, 2)
+                cv.circle(wBoard, indexFinger, 10, red, cv.FILLED)
                 #making a new array of points for a new line
                 if drawCase == False:
                     drawCase = True
                     pointNum = pointNum + 1
                     drawPoints.append([])
                 drawPoints[pointNum].append(indexFinger)
-            
             else:
                 drawCase = False
         
@@ -78,19 +78,20 @@ def main():
         for i in range(len(drawPoints)):
             for j in range(len(drawPoints[i])):
                 if j!=0:
-                    cv.line(img, drawPoints[i][j-1], drawPoints[i][j], red, 12)
-        
+                    cv.line(wBoard, drawPoints[i][j-1], drawPoints[i][j], red, 12)
+
         cv.imshow("Image", cv.flip(img, 1))
-        counter += 1
-        # print(counter)
+        cv.imshow("Whiteboard", cv.flip(wBoard, 1))
+        counter+=1
         
         if c == 27:
             break
-    
-    cv.destroyAllWindows()
-
 
 if __name__ == '__main__':
-    main()
+    cap = cv.VideoCapture(0)
+    cap.set(3, 1280) 
+    cap.set(4, 720)
+    detector = HandDetector(detectionCon=0.3, maxHands= 1)
+    generateWhiteBoard(cap, detector, 20)
 
 

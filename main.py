@@ -50,17 +50,17 @@ def main():
                 counter = wh.generateWhiteBoard(cap,detector, WB_DELAY)
 
             #if all fingers are closed then clear the screen
-            elif fingers == [0, 0, 0, 0 ,0]:
+            if fingers == [0, 0, 0, 0 ,0]:
                 drawPoints.clear()
                 pointNum = -1
                 drawCase = False
 
             #if 2 fingers are open then draw a circle on the index finger
-            elif fingers == [0, 1, 1, 0 ,0] and  wrist[1] > indexFinger[1]:
+            if fingers == [0, 1, 1, 0 ,0] and  wrist[1] > indexFinger[1]:
                 cv.circle(img, indexFinger, 10, yellow, 2)
             
             #if index finger is open then draw a line
-            elif fingers == [0, 1, 0, 0 ,0] and  wrist[1] > indexFinger[1]:
+            if fingers == [0, 1, 0, 0 ,0] and  wrist[1] > indexFinger[1]:
                 cv.circle(img, indexFinger, 10, yellow, 2)
                 #making a new array of points for a new line
                 if drawCase == False:

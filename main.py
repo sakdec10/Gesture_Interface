@@ -3,7 +3,6 @@ import numpy as np
 from cvzone.HandTrackingModule import HandDetector
 import mediapipe as mp
 import whiteboard as wh
-import pyautogui as pyg
 
 def main():
     cap = cv.VideoCapture(0)
@@ -25,6 +24,10 @@ def main():
     pointNum = -1
     drawCase = False
     counter = 10
+
+    cv.namedWindow('Image',cv.WND_PROP_FULLSCREEN)
+    cv.setWindowProperty('Image', cv.WND_PROP_FULLSCREEN, cv.WINDOW_FULLSCREEN)
+    cv.setWindowProperty('Image', cv.WND_PROP_TOPMOST, 1)
 
     while(True):
         success, img = cap.read()
@@ -48,6 +51,7 @@ def main():
                 drawPoints.clear()
                 pointNum = -1
                 drawCase = False
+                # cv.destroyWindow('Image')
                 counter = wh.generateWhiteBoard(cap,detector, WB_DELAY)
 
             #if all fingers are closed then clear the screen
@@ -81,10 +85,11 @@ def main():
                 if j!=0:
                     cv.line(img, drawPoints[i][j-1], drawPoints[i][j], red, 12)
 
-        cv.namedWindow('Image',cv.WND_PROP_FULLSCREEN)
-        cv.setWindowProperty('Image', cv.WND_PROP_FULLSCREEN, cv.WINDOW_FULLSCREEN)
+        
         img = cv.resize(img, (1920,1080), interpolation = cv.INTER_CUBIC)
-        cv.imshow("Image", cv.flip(img, 1))
+        cv.resizeWindow('Image', 320, 240)
+        cv.moveWindow('Image', 1920-320, 0)
+        cv.imshow('Image', cv.flip(img, 1))
         counter += 1
         # print(counter)
         

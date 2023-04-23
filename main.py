@@ -3,6 +3,7 @@ import numpy as np
 from cvzone.HandTrackingModule import HandDetector
 import mediapipe as mp
 import whiteboard as wh
+import pyautogui as pyg
 
 def main():
     cap = cv.VideoCapture(0)
@@ -14,8 +15,8 @@ def main():
         print("Cannot open camera")
         exit()
     
-    cap.set(3, 1280) 
-    cap.set(4, 720)
+    cap.set(3, 640) 
+    cap.set(4, 480)
 
     detector = HandDetector(detectionCon=0.7, maxHands= 1)
     yellow = [0,255,255]
@@ -79,7 +80,10 @@ def main():
             for j in range(len(drawPoints[i])):
                 if j!=0:
                     cv.line(img, drawPoints[i][j-1], drawPoints[i][j], red, 12)
-        
+
+        cv.namedWindow('Image',cv.WND_PROP_FULLSCREEN)
+        cv.setWindowProperty('Image', cv.WND_PROP_FULLSCREEN, cv.WINDOW_FULLSCREEN)
+        img = cv.resize(img, (1920,1080), interpolation = cv.INTER_CUBIC)
         cv.imshow("Image", cv.flip(img, 1))
         counter += 1
         # print(counter)

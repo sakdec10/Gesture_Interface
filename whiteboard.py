@@ -90,7 +90,10 @@ def generateWhiteBoard(cap,detector, WB_DELAY) -> int:
                 if j!=0:
                     cv.line(wBoard, drawPoints[i][j-1], drawPoints[i][j], red, 12)
 
-        cv.imshow("Image", cv.flip(img, 1))
+        cv.namedWindow('Whiteboard',cv.WND_PROP_FULLSCREEN)
+        cv.setWindowProperty('Whiteboard', cv.WND_PROP_FULLSCREEN, cv.WINDOW_FULLSCREEN)
+        wBoard = cv.resize(wBoard, (1920,1080), interpolation = cv.INTER_CUBIC)
+        # cv.imshow("Image", cv.flip(img, 1))
         cv.imshow("Whiteboard", cv.flip(wBoard, 1))
         counter+=1
         
@@ -99,8 +102,8 @@ def generateWhiteBoard(cap,detector, WB_DELAY) -> int:
 
 if __name__ == '__main__':
     cap = cv.VideoCapture(0)
-    cap.set(3, 1280) 
-    cap.set(4, 720)
+    cap.set(3, 640) 
+    cap.set(4, 480)
     detector = HandDetector(detectionCon=0.3, maxHands= 1)
     generateWhiteBoard(cap, detector, 20)
 

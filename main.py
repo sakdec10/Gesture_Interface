@@ -3,6 +3,7 @@ import numpy as np
 from cvzone.HandTrackingModule import HandDetector
 import mediapipe as mp
 import whiteboard as wh
+import autopy as ap
 
 def main():
     cap = cv.VideoCapture(0)
@@ -20,10 +21,17 @@ def main():
     detector = HandDetector(detectionCon=0.7, maxHands= 1)
     yellow = [0,255,255]
     red = [0,0,255]
+    blue = [255,0,0]
     drawPoints = [[]]                       #drawPoints array of array to store multiple points of the line
     pointNum = -1
     drawCase = False
     counter = 10
+
+    #mousePointer Variables
+    mouseCounter = 10
+    plockX, plockY = 0, 0
+    clockX, clockY = 0, 0
+    
 
     cv.namedWindow('Image',cv.WND_PROP_FULLSCREEN)
     cv.setWindowProperty('Image', cv.WND_PROP_FULLSCREEN, cv.WINDOW_FULLSCREEN)
@@ -31,13 +39,14 @@ def main():
 
     while(True):
         success, img = cap.read()
+        textDisplay = ""
 
         #camera not opened
         if img is None:
             print("Cannot open camera")
             exit()
 
-        hands, img = detector.findHands(img)
+        hands, img = detector.findHands(img, flipType=True)
 
 
         if hands:
@@ -53,19 +62,42 @@ def main():
                 drawCase = False
                 # cv.destroyWindow('Image')
                 counter = wh.generateWhiteBoard(cap,detector, WB_DELAY)
+            
+            #mouseMove trigger
+            if hands[0]["type"] == "Left":
+                textDisplay = "Mouse Mode"
+                if fingers == [0, 1, 0, 0 ,0] and  wrist[1] > indexFinger[1]:
+                    cv.rectangle(img, (420, 100), (600, 300), red, 2)
+                    xMouse = np.interp(indexFinger[0], (420, 640-150), (0, 1920))
+                    yMouse = np.interp(indexFinger[1], (100, 480-150), (0, 1080))
+                    cv.circle(img, indexFinger, 10, yellow, cv.FILLED)
+
+                    #smoothing the mouse movement
+                    clockX = plockX + (xMouse - plockX) / 5
+                    clockY = plockY + (yMouse - plockY) / 5
+
+                    ap.mouse.move(1920-clockX, clockY)
+                    plockX, plockY = clockX, clockY
+                if (fingers == [1, 0, 0, 0 ,0] or fingers == [1, 1, 0, 0 ,0]) and mouseCounter >= WB_DELAY:
+                    mouseCounter = 0
+                    ap.mouse.click()
+                    
 
             #if all fingers are closed then clear the screen
-            if fingers == [0, 0, 0, 0 ,0]:
+            if fingers == [0, 0, 0, 0 ,0] and hands[0]["type"] == "Right":
+                textDisplay = "Draw Mode"
                 drawPoints.clear()
                 pointNum = -1
                 drawCase = False
 
             #if 2 fingers are open then draw a circle on the index finger
-            if fingers == [0, 1, 1, 0 ,0] and  wrist[1] > indexFinger[1]:
+            if fingers == [0, 1, 1, 0 ,0] and  wrist[1] > indexFinger[1] and hands[0]["type"] == "Right":
+                textDisplay = "Draw Mode"
                 cv.circle(img, indexFinger, 10, yellow, 2)
             
             #if index finger is open then draw a line
-            if fingers == [0, 1, 0, 0 ,0] and  wrist[1] > indexFinger[1]:
+            if fingers == [0, 1, 0, 0 ,0] and  wrist[1] > indexFinger[1] and hands[0]["type"] == "Right":
+                textDisplay = "Draw Mode"
                 cv.circle(img, indexFinger, 10, yellow, 2)
                 #making a new array of points for a new line
                 if drawCase == False:
@@ -78,6 +110,8 @@ def main():
                 drawCase = False
         
         c = cv.waitKey(1)
+
+        cv.putText(img, textDisplay, (10, 50), cv.FONT_HERSHEY_PLAIN, 2, blue, 2)
         
         #drawing the lines
         for i in range(len(drawPoints)):
@@ -89,8 +123,9 @@ def main():
         img = cv.resize(img, (1920,1080), interpolation = cv.INTER_CUBIC)
         cv.resizeWindow('Image', 320, 240)
         cv.moveWindow('Image', 1920-320, 0)
-        cv.imshow('Image', cv.flip(img, 1))
+        cv.imshow('Image', img)
         counter += 1
+        mouseCounter += 1
         # print(counter)
         
         if c == 27:

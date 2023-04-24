@@ -4,6 +4,7 @@ from cvzone.HandTrackingModule import HandDetector
 import mediapipe as mp
 import whiteboard as wh
 import autopy as ap
+import time
 
 def main():
     cap = cv.VideoCapture(0)
@@ -22,6 +23,7 @@ def main():
     yellow = [0,255,255]
     red = [0,0,255]
     blue = [255,0,0]
+    orange = [0,165,255]
     drawPoints = [[]]                       #drawPoints array of array to store multiple points of the line
     pointNum = -1
     drawCase = False
@@ -53,7 +55,17 @@ def main():
             lmlist = hands[0]["lmList"]
             indexFinger = lmlist[8][0], lmlist[8][1]
             wrist = lmlist[0][0], lmlist[0][1]
+            middleFinger = lmlist[12][0], lmlist[12][1]
+            ringFinger = lmlist[16][0], lmlist[16][1]
+            pinkyFinger = lmlist[20][0], lmlist[20][1]
             fingers = detector.fingersUp(hands[0])
+
+            if fingers == [1, 1, 1, 1, 1] and counter >= WB_DELAY:
+                length1, info = detector.findDistance(middleFinger, indexFinger)
+                length2, info = detector.findDistance(ringFinger, middleFinger)
+                length3, info = detector.findDistance(pinkyFinger, ringFinger)
+                if length1 <=30 and length2 >=50 and length3 <=45:
+                    textDisplay = "Live Long and Prosper"
 
             #whiteboard trigger
             if (fingers == [0, 1, 0 , 0, 1] and wrist[1] > indexFinger[1]) and counter >= WB_DELAY:
@@ -111,7 +123,10 @@ def main():
         
         c = cv.waitKey(1)
 
-        cv.putText(img, textDisplay, (10, 50), cv.FONT_HERSHEY_PLAIN, 2, blue, 2)
+        if textDisplay == "Live Long and Prosper":
+            cv.putText(img, textDisplay, (0, 50), cv.FONT_HERSHEY_TRIPLEX, 1.5, orange, 2)
+        else:
+            cv.putText(img, textDisplay, (10, 50), cv.FONT_HERSHEY_PLAIN, 2, blue, 2)
         
         #drawing the lines
         for i in range(len(drawPoints)):
@@ -126,7 +141,15 @@ def main():
         cv.imshow('Image', img)
         counter += 1
         mouseCounter += 1
-        # print(counter)
+        
+        if(textDisplay == "Live Long and Prosper"):
+            counter = 0
+            while counter < 10:
+                cv.waitKey(1)
+                cv.imshow('Image', img)
+                counter +=1
+            time.sleep(4)
+            break
         
         if c == 27:
             break

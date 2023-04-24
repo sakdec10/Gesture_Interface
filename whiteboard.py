@@ -16,10 +16,19 @@ def generateWhiteBoard(cap,detector, WB_DELAY) -> int:
 
     yellow = [0,255,255]
     red = [0,0,255]
+    blue = [255,0,0]
     drawPoints = [[]]                       #drawPoints array of array to store multiple points of the line
     pointNum = -1
     drawCase = False
     counter = 0
+
+    cv.namedWindow('Whiteboard',cv.WND_PROP_FULLSCREEN)
+    cv.setWindowProperty('Whiteboard', cv.WND_PROP_FULLSCREEN, cv.WINDOW_FULLSCREEN)
+    cv.setWindowProperty('Whiteboard', cv.WND_PROP_TOPMOST, 1)
+
+    cv.namedWindow('Image',cv.WND_PROP_FULLSCREEN)
+    cv.setWindowProperty('Image', cv.WND_PROP_FULLSCREEN, cv.WINDOW_FULLSCREEN)
+    cv.setWindowProperty('Image', cv.WND_PROP_TOPMOST, 1)
 
     while(True):
         success, img = cap.read()
@@ -28,8 +37,8 @@ def generateWhiteBoard(cap,detector, WB_DELAY) -> int:
         wBoard = wBoard * 255
 
         #Adding webcam image to whiteboard
-        imgSmall = cv.resize(img, (ws, hs))
-        wBoard[0:hs,1280-ws:1280] = imgSmall
+        # imgSmall = cv.resize(img, (ws, hs))
+        # wBoard[0:hs,1280-ws:1280] = imgSmall
 
         #camera not opened
         if img is None:
@@ -37,19 +46,18 @@ def generateWhiteBoard(cap,detector, WB_DELAY) -> int:
             exit()
 
         hands, img = detector.findHands(img)
-
+        cv.putText(img, "WhiteBoard", (10, 50), cv.FONT_HERSHEY_PLAIN, 2, blue, 2)
 
         if hands:
             lmlist = hands[0]["lmList"]
             indexFinger = lmlist[8][0], lmlist[8][1]
 
+            xInterp = int(np.interp(lmlist[8][0], [0, 640//2], [0, 1280]))
+            yInterp = int(np.interp(lmlist[8][1], [150, 480-150], [0, 720]))
 
             if hands[0]["type"] == "Left":
-                xInterp = int(np.interp(lmlist[8][0], [1280//2, 1280], [0, 1280]))
-                yInterp = int(np.interp(lmlist[8][1], [150, 720-150], [0, 720]))
-            else:
-                xInterp = int(np.interp(lmlist[8][0], [0, 1280//2], [0, 1280]))
-                yInterp = int(np.interp(lmlist[8][1], [150, 720-150], [0, 720]))
+                xInterp = int(np.interp(lmlist[8][0], [640//2, 640], [0, 1280]))
+            
             drawIndex = xInterp, yInterp
 
             wrist = lmlist[0][0], lmlist[0][1]
@@ -90,8 +98,20 @@ def generateWhiteBoard(cap,detector, WB_DELAY) -> int:
                 if j!=0:
                     cv.line(wBoard, drawPoints[i][j-1], drawPoints[i][j], red, 12)
 
-        cv.imshow("Image", cv.flip(img, 1))
+        #displaying the webcam
+        
+        img = cv.resize(img, (1920,1080), interpolation = cv.INTER_CUBIC)
+        cv.resizeWindow('Image', 320, 240)
+        cv.moveWindow('Image', 1920-320, 0)
+        cv.imshow('Image', img)
+
+        #displaying the whiteboard
+        cv.resizeWindow('Whiteboard', 1280,720)
+        cv.moveWindow('Whiteboard', (1920-1280)//2, (1080-720)//2)
         cv.imshow("Whiteboard", cv.flip(wBoard, 1))
+
+        
+
         counter+=1
         
         if c == 27:
@@ -99,8 +119,8 @@ def generateWhiteBoard(cap,detector, WB_DELAY) -> int:
 
 if __name__ == '__main__':
     cap = cv.VideoCapture(0)
-    cap.set(3, 1280) 
-    cap.set(4, 720)
+    cap.set(3, 640)
+    cap.set(4, 480)
     detector = HandDetector(detectionCon=0.3, maxHands= 1)
     generateWhiteBoard(cap, detector, 20)
 

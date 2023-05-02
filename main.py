@@ -68,7 +68,7 @@ def main():
                     textDisplay = "Live Long and Prosper"
 
             #whiteboard trigger
-            if (fingers == [0, 1, 0 , 0, 1] and wrist[1] > indexFinger[1]) and counter >= WB_DELAY:
+            if (fingers == [0, 1, 0 , 0, 1] and wrist[1] > indexFinger[1]) and counter >= WB_DELAY and hands[0]["type"] == "Right":
                 drawPoints.clear()
                 pointNum = -1
                 drawCase = False
@@ -80,8 +80,8 @@ def main():
                 textDisplay = "Mouse Mode"
                 if fingers == [0, 1, 0, 0 ,0] and  wrist[1] > indexFinger[1]:
                     cv.rectangle(img, (420, 100), (600, 300), red, 2)
-                    xMouse = np.interp(indexFinger[0], (420, 640-150), (0, 1920))
-                    yMouse = np.interp(indexFinger[1], (100, 480-150), (0, 1080))
+                    xMouse = np.interp(indexFinger[0], (420, 640-100), (0, 1920))
+                    yMouse = np.interp(indexFinger[1], (100, 480-200), (0, 1080))
                     cv.circle(img, indexFinger, 10, yellow, cv.FILLED)
 
                     #smoothing the mouse movement
@@ -93,6 +93,9 @@ def main():
                 if (fingers == [1, 0, 0, 0 ,0] or fingers == [1, 1, 0, 0 ,0]) and mouseCounter >= WB_DELAY:
                     mouseCounter = 0
                     ap.mouse.click()
+                elif (fingers == [0, 0, 0, 0 ,1] or  fingers == [0, 1, 0, 0 ,1]) and mouseCounter >= WB_DELAY:
+                    mouseCounter = 0
+                    ap.mouse.click(ap.mouse.Button.RIGHT)
                     
 
             #if all fingers are closed then clear the screen
@@ -148,7 +151,7 @@ def main():
                 cv.waitKey(1)
                 cv.imshow('Image', img)
                 counter +=1
-            time.sleep(4)
+            time.sleep(3)
             break
         
         if c == 27:

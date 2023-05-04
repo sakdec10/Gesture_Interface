@@ -1,3 +1,10 @@
+#Sakshma Bansal , sb8255@rit.edu
+#This file is the main file for the project. It contains control for the mouse pointer and gestures and calls the whiteboard function.
+#References:
+#cvzone : https://github.com/cvzone/cvzone
+#mediapipe : https://google.github.io/mediapipe/solutions/hands.html
+#autopy : https://github.com/autopilot-rs/autopy
+
 import cv2 as cv
 import numpy as np
 from cvzone.HandTrackingModule import HandDetector
@@ -16,9 +23,11 @@ def main():
         print("Cannot open camera")
         exit()
     
+    #setting webcam height and width
     cap.set(3, 640) 
     cap.set(4, 480)
 
+    #setting hand detection parameters, and choosing max number of hands to detect
     detector = HandDetector(detectionCon=0.7, maxHands= 1)
     yellow = [0,255,255]
     red = [0,0,255]
@@ -52,15 +61,23 @@ def main():
 
 
         if hands:
-            lmlist = hands[0]["lmList"]
+            #getting list of hand landmarks
+            lmlist = hands[0]["lmList"] 
+
+            #getting coordinates of landmarks                            
             indexFinger = lmlist[8][0], lmlist[8][1]
             wrist = lmlist[0][0], lmlist[0][1]
             middleFinger = lmlist[12][0], lmlist[12][1]
             ringFinger = lmlist[16][0], lmlist[16][1]
             pinkyFinger = lmlist[20][0], lmlist[20][1]
+
+            #getting list of fingers that are up. 1 for up and 0 for down
             fingers = detector.fingersUp(hands[0])
 
+            #condition for exiting the program
             if fingers == [1, 1, 1, 1, 1] and counter >= WB_DELAY:
+
+                #finding distance between TIP landmarks
                 length1, info = detector.findDistance(middleFinger, indexFinger)
                 length2, info = detector.findDistance(ringFinger, middleFinger)
                 length3, info = detector.findDistance(pinkyFinger, ringFinger)
@@ -72,7 +89,6 @@ def main():
                 drawPoints.clear()
                 pointNum = -1
                 drawCase = False
-                # cv.destroyWindow('Image')
                 counter = wh.generateWhiteBoard(cap,detector, WB_DELAY)
             
             #mouseMove trigger
@@ -137,14 +153,17 @@ def main():
                 if j!=0:
                     cv.line(img, drawPoints[i][j-1], drawPoints[i][j], red, 12)
 
-        
+        #resizing the window
         img = cv.resize(img, (1920,1080), interpolation = cv.INTER_CUBIC)
         cv.resizeWindow('Image', 320, 240)
         cv.moveWindow('Image', 1920-320, 0)
         cv.imshow('Image', img)
+
+        #counters for delay for whiteboard and mouse movements
         counter += 1
         mouseCounter += 1
         
+        #exit condition
         if(textDisplay == "Live Long and Prosper"):
             counter = 0
             while counter < 10:
@@ -154,6 +173,7 @@ def main():
             time.sleep(3)
             break
         
+        #exit with escape key
         if c == 27:
             break
     

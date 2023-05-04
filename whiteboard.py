@@ -1,3 +1,9 @@
+#Saksham Bansal, sb8255@rit.edu
+#This file control whitboard funtionality.
+#cvzone : https://github.com/cvzone/cvzone
+#mediapipe : https://google.github.io/mediapipe/solutions/hands.html
+#autopy : https://github.com/autopilot-rs/autopy
+
 import cv2 as cv
 import numpy as np
 from cvzone.HandTrackingModule import HandDetector
@@ -5,9 +11,6 @@ import mediapipe as mp
 import whiteboard as wh
 
 def generateWhiteBoard(cap,detector, WB_DELAY) -> int:
-
-    #webcam height and width
-    hs, ws = 120, 230
 
     #camera not opened
     if not cap.isOpened():
@@ -22,10 +25,12 @@ def generateWhiteBoard(cap,detector, WB_DELAY) -> int:
     drawCase = False
     counter = 0
 
+    #creating a whiteboard window
     cv.namedWindow('Whiteboard',cv.WND_PROP_FULLSCREEN)
     cv.setWindowProperty('Whiteboard', cv.WND_PROP_FULLSCREEN, cv.WINDOW_FULLSCREEN)
     cv.setWindowProperty('Whiteboard', cv.WND_PROP_TOPMOST, 1)
 
+    #creating a window for the camera
     cv.namedWindow('Image',cv.WND_PROP_FULLSCREEN)
     cv.setWindowProperty('Image', cv.WND_PROP_FULLSCREEN, cv.WINDOW_FULLSCREEN)
     cv.setWindowProperty('Image', cv.WND_PROP_TOPMOST, 1)
@@ -35,10 +40,6 @@ def generateWhiteBoard(cap,detector, WB_DELAY) -> int:
         #Declaring a whiteboard
         wBoard = np.ones((720, 1280, 3), dtype = np.uint8)
         wBoard = wBoard * 255
-
-        #Adding webcam image to whiteboard
-        # imgSmall = cv.resize(img, (ws, hs))
-        # wBoard[0:hs,1280-ws:1280] = imgSmall
 
         #camera not opened
         if img is None:
@@ -52,9 +53,11 @@ def generateWhiteBoard(cap,detector, WB_DELAY) -> int:
             lmlist = hands[0]["lmList"]
             indexFinger = lmlist[8][0], lmlist[8][1]
 
+            #interpolating the index finger position to the whiteboard
             xInterp = int(np.interp(lmlist[8][0], [0, 640//2], [0, 1280]))
             yInterp = int(np.interp(lmlist[8][1], [150, 480-150], [0, 720]))
-
+            
+            #if the hand is right then interpolate the x coordinate from 0 to 640/2
             if hands[0]["type"] == "Left":
                 xInterp = int(np.interp(lmlist[8][0], [640//2, 640], [0, 1280]))
             
@@ -99,7 +102,6 @@ def generateWhiteBoard(cap,detector, WB_DELAY) -> int:
                     cv.line(wBoard, drawPoints[i][j-1], drawPoints[i][j], red, 12)
 
         #displaying the webcam
-        
         img = cv.resize(img, (1920,1080), interpolation = cv.INTER_CUBIC)
         cv.resizeWindow('Image', 320, 240)
         cv.moveWindow('Image', 1920-320, 0)
@@ -109,9 +111,8 @@ def generateWhiteBoard(cap,detector, WB_DELAY) -> int:
         cv.resizeWindow('Whiteboard', 1280,720)
         cv.moveWindow('Whiteboard', (1920-1280)//2, (1080-720)//2)
         cv.imshow("Whiteboard", cv.flip(wBoard, 1))
-
         
-
+        #counter to add delay to the close whiteboard trigger
         counter+=1
         
         if c == 27:

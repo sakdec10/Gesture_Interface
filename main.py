@@ -16,6 +16,10 @@ import time
 def main():
     cap = cv.VideoCapture(0)
 
+    #mediapipe variables
+    mp_drawing = mp.solutions.drawing_utils
+    mp_pose = mp.solutions.pose
+
     WB_DELAY = 20
 
     #camera not opened
@@ -29,6 +33,7 @@ def main():
 
     #setting hand detection parameters, and choosing max number of hands to detect
     detector = HandDetector(detectionCon=0.7, maxHands= 1)
+    poseDetector = mp_pose.Pose(min_detection_confidence=0.5, min_tracking_confidence=0.5)
     yellow = [0,255,255]
     red = [0,0,255]
     blue = [255,0,0]
@@ -51,15 +56,24 @@ def main():
     while(True):
         success, img = cap.read()
         textDisplay = ""
+        poseText = ""
 
         #camera not opened
         if img is None:
             print("Cannot open camera")
             exit()
 
+        #detecting pose
+        pose_img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
+        pose_img.flags.writeable = False 
+        results = poseDetector.process(pose_img)
+
         hands, img = detector.findHands(img, flipType=True)
+        mp_drawing.draw_landmarks(img, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
 
+        pose_points = results.pose_landmarks.landmark
 
+        #for hands
         if hands:
             #getting list of hand landmarks
             lmlist = hands[0]["lmList"] 
@@ -140,12 +154,25 @@ def main():
             else:
                 drawCase = False
         
+        if pose_points is not None:
+            if pose_points[13].y < pose_points[11].y or pose_points[15].y < pose_points[13].y:
+                poseText = "Left Arm Up"
+                print("Left Arm Up")
+            if pose_points[14].y < pose_points[12].y or pose_points[16].y < pose_points[14].y:
+                poseText = "Right Arm Up"
+                print("Right Arm Up")
+
+
+
+
         c = cv.waitKey(1)
 
         if textDisplay == "Live Long and Prosper":
             cv.putText(img, textDisplay, (0, 50), cv.FONT_HERSHEY_TRIPLEX, 1.5, orange, 2)
         else:
             cv.putText(img, textDisplay, (10, 50), cv.FONT_HERSHEY_PLAIN, 2, blue, 2)
+        
+        cv.putText(img, poseText, (400, 450), cv.FONT_HERSHEY_PLAIN, 2, blue, 2)
         
         #drawing the lines
         for i in range(len(drawPoints)):

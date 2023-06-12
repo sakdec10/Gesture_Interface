@@ -47,7 +47,7 @@ def generateWhiteBoard(cap,detector, WB_DELAY) -> int:
             exit()
 
         hands, img = detector.findHands(img)
-        cv.putText(img, "WhiteBoard", (10, 50), cv.FONT_HERSHEY_PLAIN, 2, blue, 2)
+        cv.putText(img, "WhiteBoard", (10, 50), cv.FONT_HERSHEY_PLAIN, 2, red, 2)
 
         if hands:
             lmlist = hands[0]["lmList"]
@@ -102,7 +102,7 @@ def generateWhiteBoard(cap,detector, WB_DELAY) -> int:
                     cv.line(wBoard, drawPoints[i][j-1], drawPoints[i][j], red, 12)
 
         #displaying the webcam
-        img = cv.resize(img, (1920,1080), interpolation = cv.INTER_CUBIC)
+        # img = cv.resize(img, (1920,1080), interpolation = cv.INTER_CUBIC)
         cv.resizeWindow('Image', 320, 240)
         cv.moveWindow('Image', 1920-320, 0)
         cv.imshow('Image', img)

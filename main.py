@@ -116,12 +116,12 @@ def main():
                         blueCase = False
                         buttonCounter = 0
 
-                    cv.putText(img, "WhiteBoard", (redPoint[0]-50, redPoint[1]-50), cv.FONT_HERSHEY_DUPLEX, 0.7, orange, 0)
+                    cv.putText(img, "WhiteBoard", (redPoint[0]-50, redPoint[1]-50), cv.FONT_HERSHEY_DUPLEX, 0.7, red, 0)
 
                     if buttonCounter >= WB_DELAY:
                         buttonCounter = 0
                         print("Whiteboard")
-                        # counter = wh.generateWhiteBoard(cap,detector, WB_DELAY)
+                        counter = wh.generateWhiteBoard(cap,detector, WB_DELAY)
 
                 elif Math.sqrt((greenPoint[0]-middleFinger[0])**2 + (greenPoint[1]-(middleFinger[1]-20))**2) <= 12:
                     greenThickNess = 15
@@ -132,7 +132,7 @@ def main():
                         blueCase = False
                         buttonCounter = 0
 
-                    cv.putText(img, "ASL Typing", (greenPoint[0]-50, greenPoint[1]-50), cv.FONT_HERSHEY_DUPLEX, 0.7, orange, 0)
+                    cv.putText(img, "ASL Typing", (greenPoint[0]-50, greenPoint[1]-50), cv.FONT_HERSHEY_DUPLEX, 0.7, green, 0)
 
                     if buttonCounter >= WB_DELAY:
                         buttonCounter = 0
@@ -147,7 +147,7 @@ def main():
                         blueCase = True
                         buttonCounter = 0
 
-                    cv.putText(img, "System Control", (bluePoint[0]-50, bluePoint[1]-50), cv.FONT_HERSHEY_DUPLEX, 0.7, orange, 0)
+                    cv.putText(img, "System Control", (bluePoint[0]-50, bluePoint[1]-50), cv.FONT_HERSHEY_DUPLEX, 0.7, blue, 0)
 
                     if buttonCounter >= WB_DELAY:
                         buttonCounter = 0
@@ -261,7 +261,7 @@ def main():
         #resizing the window
         img = cv.resize(img, (1280,720), interpolation = cv.INTER_CUBIC)
         cv.resizeWindow('Image', 1280, 720)
-        # cv.moveWindow('Image', 1920-320, 0)
+        cv.moveWindow('Image', (1920-1280)//2, (1080-720)//2)
         cv.imshow('Image', img)
 
         #counters for delay for whiteboard and mouse movements

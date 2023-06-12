@@ -10,6 +10,7 @@ import numpy as np
 from cvzone.HandTrackingModule import HandDetector
 import mediapipe as mp
 import whiteboard as wh
+import math as Math
 # import autopy as ap
 import time
 
@@ -48,7 +49,9 @@ def main():
     mouseCounter = 10
     plockX, plockY = 0, 0
     clockX, clockY = 0, 0
-    
+
+    #button Variables
+    buttonCounter = 10
 
     cv.namedWindow('Image',cv.WND_PROP_FULLSCREEN)
     # cv.setWindowProperty('Image', cv.WND_PROP_FULLSCREEN, cv.WINDOW_FULLSCREEN)
@@ -70,7 +73,7 @@ def main():
         results = poseDetector.process(pose_img)
 
         #detecting hands
-        hands, img = detector.findHands(img, flipType=True)
+        hands = detector.findHands(img, draw= False, flipType=True)
 
         #drawing pose landmarks
         mp_drawing.draw_landmarks(img, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
@@ -92,16 +95,70 @@ def main():
             fingers = detector.fingersUp(hands[0])
 
             if (fingers == [1, 1, 1, 1, 1] and wrist[1] > indexFinger[1]) and counter >= WB_DELAY:
-                cv.circle(img, (middleFinger[0], middleFinger[1]-20), 20, yellow, 2)
+                cv.circle(img, (middleFinger[0], middleFinger[1]-20), 5, yellow, 2)
+                redThickNess  = greenThickNess = blueThickNess = 12
                 if drawCase == False:
                     cv.waitKey(100)
                     drawCase = True
                     redPoint = indexFinger[0], indexFinger[1]-20
                     greenPoint = ringFinger[0], ringFinger[1]-20
                     bluePoint = pinkyFinger[0], pinkyFinger[1]-20
-                cv.circle(img, redPoint, 10, red, -2)
-                cv.circle(img, greenPoint, 10, green, -2)
-                cv.circle(img, bluePoint, 10, blue, -2)   
+                    redCase = False
+                    greenCase = False
+                    blueCase = False
+
+                if Math.sqrt((redPoint[0]-middleFinger[0])**2 + (redPoint[1]-(middleFinger[1]-20))**2) <= 12:
+                    redThickNess = 15
+
+                    if redCase == False: 
+                        redCase = True
+                        greenCase = False
+                        blueCase = False
+                        buttonCounter = 0
+
+                    cv.putText(img, "WhiteBoard", (redPoint[0]-50, redPoint[1]-50), cv.FONT_HERSHEY_DUPLEX, 0.7, orange, 0)
+
+                    if buttonCounter >= WB_DELAY:
+                        buttonCounter = 0
+                        print("Whiteboard")
+                        # counter = wh.generateWhiteBoard(cap,detector, WB_DELAY)
+
+                elif Math.sqrt((greenPoint[0]-middleFinger[0])**2 + (greenPoint[1]-(middleFinger[1]-20))**2) <= 12:
+                    greenThickNess = 15
+
+                    if greenCase == False: 
+                        redCase = False
+                        greenCase = True
+                        blueCase = False
+                        buttonCounter = 0
+
+                    cv.putText(img, "ASL Typing", (greenPoint[0]-50, greenPoint[1]-50), cv.FONT_HERSHEY_DUPLEX, 0.7, orange, 0)
+
+                    if buttonCounter >= WB_DELAY:
+                        buttonCounter = 0
+                        print("ASL Typing")
+
+                elif Math.sqrt((bluePoint[0]-middleFinger[0])**2 + (bluePoint[1]-(middleFinger[1]-20))**2) <= 12:
+                    blueThickNess = 15
+
+                    if blueCase == False:
+                        redCase = False
+                        greenCase = False
+                        blueCase = True
+                        buttonCounter = 0
+
+                    cv.putText(img, "System Control", (bluePoint[0]-50, bluePoint[1]-50), cv.FONT_HERSHEY_DUPLEX, 0.7, orange, 0)
+
+                    if buttonCounter >= WB_DELAY:
+                        buttonCounter = 0
+                        print("System Control")
+
+                else:
+                    redThickNess  = greenThickNess = blueThickNess = 12
+
+                cv.circle(img, redPoint, redThickNess, red, -2)
+                cv.circle(img, greenPoint, greenThickNess, green, -2)
+                cv.circle(img, bluePoint, blueThickNess, blue, -2)   
             
             else:
                 drawCase = False
@@ -178,10 +235,10 @@ def main():
         if pose_points is not None:
             if pose_points[13].y < pose_points[11].y or pose_points[15].y < pose_points[13].y:
                 poseText = "Left Arm Up"
-                print("Left Arm Up")
+                # print("Left Arm Up")
             if pose_points[14].y < pose_points[12].y or pose_points[16].y < pose_points[14].y:
                 poseText = "Right Arm Up"
-                print("Right Arm Up")
+                # print("Right Arm Up")
 
 
 
@@ -210,6 +267,7 @@ def main():
         #counters for delay for whiteboard and mouse movements
         counter += 1
         mouseCounter += 1
+        buttonCounter += 1
         
         #exit condition
         if(textDisplay == "Live Long and Prosper"):

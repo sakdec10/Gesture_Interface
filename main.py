@@ -44,6 +44,7 @@ def main():
     pointNum = -1
     drawCase = False
     counter = 10
+    pose_points = None
 
     #mousePointer Variables
     mouseCounter = 10
@@ -77,7 +78,10 @@ def main():
 
         #drawing pose landmarks
         mp_drawing.draw_landmarks(img, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
-        pose_points = results.pose_landmarks.landmark
+        try:
+            pose_points = results.pose_landmarks.landmark
+        except:
+            pass
 
         #for hands
         if hands:

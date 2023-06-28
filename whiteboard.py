@@ -10,6 +10,7 @@ from cvzone.HandTrackingModule import HandDetector
 import mediapipe as mp
 import whiteboard as wh
 import pyautogui as pyg
+import platform
 
 def generateWhiteBoard(cap,detector, WB_DELAY) -> int:
 
@@ -17,6 +18,12 @@ def generateWhiteBoard(cap,detector, WB_DELAY) -> int:
     if not cap.isOpened():
         print("Cannot open camera")
         exit()
+
+    #checking if the platform is mac or not
+    if "mac" in platform.platform().lower():
+        mac = True
+    else:
+        mac = False
 
     #getting screen size
     screen_width, screen_height = pyg.size()
@@ -109,7 +116,10 @@ def generateWhiteBoard(cap,detector, WB_DELAY) -> int:
         #displaying the webcam
         # img = cv.resize(img, (1920,1080), interpolation = cv.INTER_CUBIC)
         cv.resizeWindow('Image', 320, 240)
-        cv.moveWindow('Image', screen_width-320, 0)
+        if mac:
+            cv.moveWindow('Image', screen_width-320, -200)
+        else:
+            cv.moveWindow('Image', screen_width-320, 0)
         cv.imshow('Image', img)
 
         #displaying the whiteboard

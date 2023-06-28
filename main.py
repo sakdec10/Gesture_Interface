@@ -19,11 +19,11 @@ def main():
     
     cap = cv.VideoCapture(0)
 
-    if platform.platform().__contains__("Mac"):
+    #checking if the platform is mac or not
+    if "mac" in platform.platform().lower():
         mac = True
     else:
         mac = False
-
 
     #getting screen size
     screen_width, screen_height = pyg.size()
@@ -298,7 +298,6 @@ def main():
         if c == 27:
             break
     
-    print(mac)
     cv.destroyAllWindows()
 
 

@@ -10,6 +10,7 @@ import numpy as np
 from cvzone.HandTrackingModule import HandDetector
 import mediapipe as mp
 import whiteboard as wh
+import math as Math
 # import autopy as ap
 import time
 
@@ -28,8 +29,8 @@ def main():
         exit()
     
     #setting webcam height and width
-    cap.set(3, 640) 
-    cap.set(4, 480)
+    cap.set(3, 1024) 
+    cap.set(4, 720)
 
     #setting hand detection parameters, and choosing max number of hands to detect
     detector = HandDetector(detectionCon=0.7, maxHands= 1)
@@ -37,17 +38,21 @@ def main():
     yellow = [0,255,255]
     red = [0,0,255]
     blue = [255,0,0]
+    green = [0,255,0]
     orange = [0,165,255]
     drawPoints = [[]]                       #drawPoints array of array to store multiple points of the line
     pointNum = -1
     drawCase = False
     counter = 10
+    pose_points = None
 
     #mousePointer Variables
     mouseCounter = 10
     plockX, plockY = 0, 0
     clockX, clockY = 0, 0
-    
+
+    #button Variables
+    buttonCounter = 10
 
     cv.namedWindow('Image',cv.WND_PROP_FULLSCREEN)
     # cv.setWindowProperty('Image', cv.WND_PROP_FULLSCREEN, cv.WINDOW_FULLSCREEN)
@@ -68,10 +73,15 @@ def main():
         pose_img.flags.writeable = False 
         results = poseDetector.process(pose_img)
 
-        hands, img = detector.findHands(img, flipType=True)
-        mp_drawing.draw_landmarks(img, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
+        #detecting hands
+        hands = detector.findHands(img, draw= False, flipType=True)
 
-        pose_points = results.pose_landmarks.landmark
+        #drawing pose landmarks
+        mp_drawing.draw_landmarks(img, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
+        try:
+            pose_points = results.pose_landmarks.landmark
+        except:
+            pass
 
         #for hands
         if hands:
@@ -88,15 +98,87 @@ def main():
             #getting list of fingers that are up. 1 for up and 0 for down
             fingers = detector.fingersUp(hands[0])
 
-            #condition for exiting the program
-            if fingers == [1, 1, 1, 1, 1] and counter >= WB_DELAY:
+            if (fingers == [1, 1, 1, 1, 1] and wrist[1] > indexFinger[1]) and counter >= WB_DELAY:
+                cv.circle(img, (middleFinger[0], middleFinger[1]-20), 5, yellow, 2)
+                redThickNess  = greenThickNess = blueThickNess = 12
+                if drawCase == False:
+                    cv.waitKey(100)
+                    drawCase = True
+                    redPoint = indexFinger[0], indexFinger[1]-20
+                    greenPoint = ringFinger[0], ringFinger[1]-20
+                    bluePoint = pinkyFinger[0], pinkyFinger[1]-20
+                    redCase = False
+                    greenCase = False
+                    blueCase = False
 
-                #finding distance between TIP landmarks
-                length1, info = detector.findDistance(middleFinger, indexFinger)
-                length2, info = detector.findDistance(ringFinger, middleFinger)
-                length3, info = detector.findDistance(pinkyFinger, ringFinger)
-                if length1 <=30 and length2 >=50 and length3 <=45:
-                    textDisplay = "Live Long and Prosper"
+                if Math.sqrt((redPoint[0]-middleFinger[0])**2 + (redPoint[1]-(middleFinger[1]-20))**2) <= 12:
+                    redThickNess = 15
+
+                    if redCase == False: 
+                        redCase = True
+                        greenCase = False
+                        blueCase = False
+                        buttonCounter = 0
+
+                    cv.putText(img, "WhiteBoard", (redPoint[0]-50, redPoint[1]-50), cv.FONT_HERSHEY_DUPLEX, 0.7, red, 0)
+
+                    if buttonCounter >= WB_DELAY:
+                        buttonCounter = 0
+                        print("Whiteboard")
+                        counter = wh.generateWhiteBoard(cap,detector, WB_DELAY)
+
+                elif Math.sqrt((greenPoint[0]-middleFinger[0])**2 + (greenPoint[1]-(middleFinger[1]-20))**2) <= 12:
+                    greenThickNess = 15
+
+                    if greenCase == False: 
+                        redCase = False
+                        greenCase = True
+                        blueCase = False
+                        buttonCounter = 0
+
+                    cv.putText(img, "ASL Typing", (greenPoint[0]-50, greenPoint[1]-50), cv.FONT_HERSHEY_DUPLEX, 0.7, green, 0)
+
+                    if buttonCounter >= WB_DELAY:
+                        buttonCounter = 0
+                        print("ASL Typing")
+
+                elif Math.sqrt((bluePoint[0]-middleFinger[0])**2 + (bluePoint[1]-(middleFinger[1]-20))**2) <= 12:
+                    blueThickNess = 15
+
+                    if blueCase == False:
+                        redCase = False
+                        greenCase = False
+                        blueCase = True
+                        buttonCounter = 0
+
+                    cv.putText(img, "System Control", (bluePoint[0]-50, bluePoint[1]-50), cv.FONT_HERSHEY_DUPLEX, 0.7, blue, 0)
+
+                    if buttonCounter >= WB_DELAY:
+                        buttonCounter = 0
+                        print("System Control")
+
+                else:
+                    redThickNess  = greenThickNess = blueThickNess = 12
+
+                cv.circle(img, redPoint, redThickNess, red, -2)
+                cv.circle(img, greenPoint, greenThickNess, green, -2)
+                cv.circle(img, bluePoint, blueThickNess, blue, -2)   
+            
+            else:
+                drawCase = False
+
+
+
+
+            #condition for exiting the program
+            # if fingers == [1, 1, 1, 1, 1] and counter >= WB_DELAY:
+
+            #     #finding distance between TIP landmarks
+            #     length1, info = detector.findDistance(middleFinger, indexFinger)
+            #     length2, info = detector.findDistance(ringFinger, middleFinger)
+            #     length3, info = detector.findDistance(pinkyFinger, ringFinger)
+            #     if length1 <=30 and length2 >=50 and length3 <=45:
+            #         textDisplay = "Live Long and Prosper"
 
             #whiteboard trigger
             # if (fingers == [0, 1, 0 , 0, 1] and wrist[1] > indexFinger[1]) and counter >= WB_DELAY and hands[0]["type"] == "Right":
@@ -129,38 +211,38 @@ def main():
                     
 
             #if all fingers are closed then clear the screen
-            if fingers == [0, 0, 0, 0 ,0] and hands[0]["type"] == "Right":
-                textDisplay = "Draw Mode"
-                drawPoints.clear()
-                pointNum = -1
-                drawCase = False
+            # if fingers == [0, 0, 0, 0 ,0] and hands[0]["type"] == "Right":
+            #     textDisplay = "Draw Mode"
+            #     drawPoints.clear()
+            #     pointNum = -1
+            #     drawCase = False
 
             #if 2 fingers are open then draw a circle on the index finger
-            if fingers == [0, 1, 1, 0 ,0] and  wrist[1] > indexFinger[1] and hands[0]["type"] == "Right":
-                textDisplay = "Draw Mode"
-                cv.circle(img, indexFinger, 10, yellow, 2)
+            # if fingers == [0, 1, 1, 0 ,0] and  wrist[1] > indexFinger[1] and hands[0]["type"] == "Right":
+            #     textDisplay = "Draw Mode"
+            #     cv.circle(img, indexFinger, 10, yellow, 2)
             
             #if index finger is open then draw a line
-            if fingers == [0, 1, 0, 0 ,0] and  wrist[1] > indexFinger[1] and hands[0]["type"] == "Right":
-                textDisplay = "Draw Mode"
-                cv.circle(img, indexFinger, 10, yellow, 2)
-                #making a new array of points for a new line
-                if drawCase == False:
-                    drawCase = True
-                    pointNum = pointNum + 1
-                    drawPoints.append([])
-                drawPoints[pointNum].append(indexFinger)
+            # if fingers == [0, 1, 0, 0 ,0] and  wrist[1] > indexFinger[1] and hands[0]["type"] == "Right":
+            #     textDisplay = "Draw Mode"
+            #     cv.circle(img, indexFinger, 10, yellow, 2)
+            #     #making a new array of points for a new line
+            #     if drawCase == False:
+            #         drawCase = True
+            #         pointNum = pointNum + 1
+            #         drawPoints.append([])
+            #     drawPoints[pointNum].append(indexFinger)
             
-            else:
-                drawCase = False
+            # else:
+            #     drawCase = False
         
         if pose_points is not None:
             if pose_points[13].y < pose_points[11].y or pose_points[15].y < pose_points[13].y:
                 poseText = "Left Arm Up"
-                print("Left Arm Up")
+                # print("Left Arm Up")
             if pose_points[14].y < pose_points[12].y or pose_points[16].y < pose_points[14].y:
                 poseText = "Right Arm Up"
-                print("Right Arm Up")
+                # print("Right Arm Up")
 
 
 
@@ -172,7 +254,7 @@ def main():
         else:
             cv.putText(img, textDisplay, (10, 50), cv.FONT_HERSHEY_PLAIN, 2, blue, 2)
         
-        cv.putText(img, poseText, (400, 450), cv.FONT_HERSHEY_PLAIN, 2, blue, 2)
+        # cv.putText(img, poseText, (600, 600), cv.FONT_HERSHEY_PLAIN, 2, blue, 2)
         
         #drawing the lines
         for i in range(len(drawPoints)):
@@ -181,14 +263,15 @@ def main():
                     cv.line(img, drawPoints[i][j-1], drawPoints[i][j], red, 12)
 
         #resizing the window
-        img = cv.resize(img, (1920,1080), interpolation = cv.INTER_CUBIC)
-        cv.resizeWindow('Image', 1024, 720)
-        # cv.moveWindow('Image', 1920-320, 0)
+        img = cv.resize(img, (1280,720), interpolation = cv.INTER_CUBIC)
+        cv.resizeWindow('Image', 1280, 720)
+        cv.moveWindow('Image', (1920-1280)//2, (1080-720)//2)
         cv.imshow('Image', img)
 
         #counters for delay for whiteboard and mouse movements
         counter += 1
         mouseCounter += 1
+        buttonCounter += 1
         
         #exit condition
         if(textDisplay == "Live Long and Prosper"):

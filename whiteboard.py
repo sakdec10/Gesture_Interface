@@ -9,6 +9,7 @@ import numpy as np
 from cvzone.HandTrackingModule import HandDetector
 import mediapipe as mp
 import whiteboard as wh
+import pyautogui as pyg
 
 def generateWhiteBoard(cap,detector, WB_DELAY) -> int:
 
@@ -17,6 +18,10 @@ def generateWhiteBoard(cap,detector, WB_DELAY) -> int:
         print("Cannot open camera")
         exit()
 
+    #getting screen size
+    screen_width, screen_height = pyg.size()
+
+    #declaring variables
     yellow = [0,255,255]
     red = [0,0,255]
     blue = [255,0,0]
@@ -104,12 +109,12 @@ def generateWhiteBoard(cap,detector, WB_DELAY) -> int:
         #displaying the webcam
         # img = cv.resize(img, (1920,1080), interpolation = cv.INTER_CUBIC)
         cv.resizeWindow('Image', 320, 240)
-        cv.moveWindow('Image', 1920-320, 0)
+        cv.moveWindow('Image', screen_width-320, 0)
         cv.imshow('Image', img)
 
         #displaying the whiteboard
         cv.resizeWindow('Whiteboard', 1280,720)
-        cv.moveWindow('Whiteboard', (1920-1280)//2, (1080-720)//2)
+        cv.moveWindow('Whiteboard', (screen_width-1280)//2, (screen_height-720)//2)
         cv.imshow("Whiteboard", cv.flip(wBoard, 1))
         
         #counter to add delay to the close whiteboard trigger

@@ -11,11 +11,15 @@ from cvzone.HandTrackingModule import HandDetector
 import mediapipe as mp
 import whiteboard as wh
 import math as Math
-# import autopy as ap
+import pyautogui as pyg
 import time
 
 def main():
+    
     cap = cv.VideoCapture(0)
+
+    #getting screen size
+    screen_width, screen_height = pyg.size()
 
     #mediapipe variables
     mp_drawing = mp.solutions.drawing_utils
@@ -265,7 +269,7 @@ def main():
         #resizing the window
         img = cv.resize(img, (1280,720), interpolation = cv.INTER_CUBIC)
         cv.resizeWindow('Image', 1280, 720)
-        cv.moveWindow('Image', (1920-1280)//2, (1080-720)//2)
+        cv.moveWindow('Image', (screen_width-1280)//2, (screen_height-720)//2)
         cv.imshow('Image', img)
 
         #counters for delay for whiteboard and mouse movements

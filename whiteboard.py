@@ -32,12 +32,12 @@ def generateWhiteBoard(cap,detector, WB_DELAY) -> int:
 
     #creating a whiteboard window
     cv.namedWindow('Whiteboard',cv.WND_PROP_FULLSCREEN)
-    cv.setWindowProperty('Whiteboard', cv.WND_PROP_FULLSCREEN, cv.WINDOW_FULLSCREEN)
+    # cv.setWindowProperty('Whiteboard', cv.WND_PROP_FULLSCREEN, cv.WINDOW_FULLSCREEN)
     cv.setWindowProperty('Whiteboard', cv.WND_PROP_TOPMOST, 1)
 
     #creating a window for the camera
     cv.namedWindow('Image',cv.WND_PROP_FULLSCREEN)
-    cv.setWindowProperty('Image', cv.WND_PROP_FULLSCREEN, cv.WINDOW_FULLSCREEN)
+    # cv.setWindowProperty('Image', cv.WND_PROP_FULLSCREEN, cv.WINDOW_FULLSCREEN)
     cv.setWindowProperty('Image', cv.WND_PROP_TOPMOST, 1)
 
     while(True):

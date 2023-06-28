@@ -13,10 +13,17 @@ import whiteboard as wh
 import math as Math
 import pyautogui as pyg
 import time
+import platform
 
 def main():
     
     cap = cv.VideoCapture(0)
+
+    if platform.platform().__contains__("Mac"):
+        mac = True
+    else:
+        mac = False
+
 
     #getting screen size
     screen_width, screen_height = pyg.size()
@@ -291,6 +298,7 @@ def main():
         if c == 27:
             break
     
+    print(mac)
     cv.destroyAllWindows()
 
 

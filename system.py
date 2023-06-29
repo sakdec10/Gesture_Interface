@@ -67,13 +67,13 @@ def controlSystem(cap,detector, WB_DELAY) -> int:
                     # cv.rectangle(img, (420, 100), (600, 300), red, 2)
                     # xMouse = np.interp(indexFinger[0], (420, 640-100), (0, 1920))
                     # yMouse = np.interp(indexFinger[1], (100, 480-200), (0, 1080))
-                    xMouse = int(np.interp(lmlist[8][0], [0, 640//2], [0, screen_width]))
-                    yMouse = int(np.interp(lmlist[8][1], [150, 480-150], [0, screen_height]))
+                    xMouse = int(np.interp(lmlist[8][0], [50, 1024//2], [0, screen_width]))
+                    yMouse = int(np.interp(lmlist[8][1], [50, 400], [0, screen_height]))
                     cv.circle(img, indexFinger, 10, yellow, cv.FILLED)
 
                     # smoothing the mouse movement
-                    clockX = plockX + (xMouse - plockX) / 5
-                    clockY = plockY + (yMouse - plockY) / 5
+                    # clockX = plockX + (xMouse - plockX) / 5
+                    # clockY = plockY + (yMouse - plockY) / 5
 
                     pyg.moveTo(xMouse, yMouse, 0.1, pyg.easeInQuad, _pause=False)
 
@@ -115,7 +115,7 @@ def controlSystem(cap,detector, WB_DELAY) -> int:
 
 if __name__ == '__main__':
     cap = cv.VideoCapture(0)
-    cap.set(3, 640)
-    cap.set(4, 480)
+    cap.set(3, 1024)
+    cap.set(4, 720)
     detector = HandDetector(detectionCon=0.3, maxHands= 1)
     controlSystem(cap, detector, 20)

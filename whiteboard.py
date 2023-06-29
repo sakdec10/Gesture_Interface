@@ -66,12 +66,12 @@ def generateWhiteBoard(cap,detector, WB_DELAY) -> int:
             indexFinger = lmlist[8][0], lmlist[8][1]
 
             #interpolating the index finger position to the whiteboard
-            xInterp = int(np.interp(lmlist[8][0], [0, 640//2], [0, 1280]))
-            yInterp = int(np.interp(lmlist[8][1], [150, 480-150], [0, 720]))
+            xInterp = int(np.interp(lmlist[8][0], [50, 1024//2], [0, 1280]))
+            yInterp = int(np.interp(lmlist[8][1], [50, 400], [0, 720]))
             
-            #if the hand is right then interpolate the x coordinate from 0 to 640/2
-            if hands[0]["type"] == "Left":
-                xInterp = int(np.interp(lmlist[8][0], [640//2, 640], [0, 1280]))
+            # #if the hand is right then interpolate the x coordinate from 0 to 640/2
+            # if hands[0]["type"] == "Left":
+            #     xInterp = int(np.interp(lmlist[8][0], [640//2, 640], [0, 1280]))
             
             drawIndex = xInterp, yInterp
 
@@ -79,22 +79,22 @@ def generateWhiteBoard(cap,detector, WB_DELAY) -> int:
             fingers = detector.fingersUp(hands[0])
 
             #close whiteboard trigger
-            if (fingers == [0, 1, 0 , 0, 1] and wrist[1] > indexFinger[1]) and counter >= WB_DELAY:
+            if hands[0]["type"] == "Left" and (fingers == [0, 1, 0 , 0, 1] and wrist[1] > indexFinger[1]) and counter >= WB_DELAY:
                 cv.destroyWindow("Whiteboard")
                 return 0
             
             #if all fingers are closed then clear the screen
-            if fingers == [0, 0, 0, 0 ,0]:
+            if hands[0]["type"] == "Right" and fingers == [0, 0, 0, 0 ,0]:
                 drawCase = False
                 drawPoints.clear()
                 pointNum = -1
             
             #if 2 fingers are open then draw a circle on the index finger
-            if fingers == [0, 1, 1, 0 ,0] and  wrist[1] > indexFinger[1]:
+            if hands[0]["type"] == "Right" and fingers == [0, 1, 1, 0 ,0] and  wrist[1] > indexFinger[1]:
                 cv.circle(wBoard, drawIndex, 10, red, cv.FILLED)
             
             #if index finger is open then draw a line
-            if fingers == [0, 1, 0, 0 ,0] and  wrist[1] > indexFinger[1]:
+            if hands[0]["type"] == "Right" and fingers == [0, 1, 0, 0 ,0] and  wrist[1] > indexFinger[1]:
                 cv.circle(wBoard, drawIndex, 10, red, cv.FILLED)
                 #making a new array of points for a new line
                 if drawCase == False:
@@ -135,8 +135,8 @@ def generateWhiteBoard(cap,detector, WB_DELAY) -> int:
 
 if __name__ == '__main__':
     cap = cv.VideoCapture(0)
-    cap.set(3, 640)
-    cap.set(4, 480)
+    cap.set(3, 1024)
+    cap.set(4, 720)
     detector = HandDetector(detectionCon=0.3, maxHands= 1)
     generateWhiteBoard(cap, detector, 20)
 

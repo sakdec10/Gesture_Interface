@@ -10,6 +10,7 @@ import numpy as np
 from cvzone.HandTrackingModule import HandDetector
 import mediapipe as mp
 import whiteboard as wh
+import system as sys
 import math as Math
 import pyautogui as pyg
 import time
@@ -88,7 +89,7 @@ def main():
         hands = detector.findHands(img, draw= False, flipType=True)
 
         #drawing pose landmarks
-        mp_drawing.draw_landmarks(img, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
+        # mp_drawing.draw_landmarks(img, results.pose_landmarks, mp_pose.POSE_CONNECTIONS)
         try:
             pose_points = results.pose_landmarks.landmark
         except:
@@ -167,6 +168,7 @@ def main():
                     if buttonCounter >= WB_DELAY:
                         buttonCounter = 0
                         print("System Control")
+                        counter = sys.controlSystem(cap,detector, WB_DELAY)
 
                 else:
                     redThickNess  = greenThickNess = blueThickNess = 12
@@ -198,7 +200,7 @@ def main():
             #     drawCase = False
             #     counter = wh.generateWhiteBoard(cap,detector, WB_DELAY)
             
-            #mouseMove trigger
+            # # mouseMove trigger
             # if hands[0]["type"] == "Left":
             #     textDisplay = "Mouse Mode"
             #     if fingers == [0, 1, 0, 0 ,0] and  wrist[1] > indexFinger[1]:

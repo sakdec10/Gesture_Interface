@@ -4,6 +4,7 @@ from cvzone.HandTrackingModule import HandDetector
 import mediapipe as mp
 import pyautogui as pyg
 import platform
+import kb_control as kb
 # import autopy as ap
 
 def controlSystem(cap,detector, WB_DELAY) -> int:

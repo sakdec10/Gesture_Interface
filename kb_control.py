@@ -22,9 +22,9 @@ def drawKB(cap,detector, WB_DELAY)-> str:
     screen_width, screen_height = pyg.size()
 
     #declaring variables
-    yellow = [0,255,255]
-    red = [0,0,255]
-    blue = [255,0,0]
+    white = [255,255,255]
+    black = [0,0,0]
+    gray = [128,128,128]
     drawPoints = [[]]                       #drawPoints array of array to store multiple points of the line
     pointNum = -1
     drawCase = False
@@ -33,6 +33,23 @@ def drawKB(cap,detector, WB_DELAY)-> str:
     #creating a window for the camera
     cv.namedWindow('Image',cv.WND_PROP_FULLSCREEN)
     cv.setWindowProperty('Image', cv.WND_PROP_TOPMOST, 1)
+
+    qkeys = [["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P"],
+            ["A", "S", "D", "F", "G", "H", "J", "K", "L", ";"],
+            ["Z", "X", "C", "V", "B", "N", "M", ",", ".", "/"]]
+
+    keylist = []
+    for i in range(3):
+        for j in range(10):
+            keylist.append([j*50+25, i*55+50, qkeys[i][j]])
+
+    def drawkb(img, keylist):
+        for key in keylist:
+            x, y, key = key
+            cv.rectangle(img, (x, y), (x+35, y+45), gray, cv.FILLED)
+            cv.putText(img, key, (x+5, y+30), cv.FONT_HERSHEY_PLAIN, 2, white, 2)
+        return img                                                         
+
 
     while(True):
         success, img = cap.read()
@@ -43,7 +60,7 @@ def drawKB(cap,detector, WB_DELAY)-> str:
         
         hands, img = detector.findHands(img)
          
-
+        img = drawkb(img, keylist)
 
 
 

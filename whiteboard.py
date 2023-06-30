@@ -9,6 +9,8 @@ import numpy as np
 from cvzone.HandTrackingModule import HandDetector
 import mediapipe as mp
 import whiteboard as wh
+import pyautogui as pyg
+import platform
 
 def generateWhiteBoard(cap,detector, WB_DELAY) -> int:
 
@@ -17,6 +19,16 @@ def generateWhiteBoard(cap,detector, WB_DELAY) -> int:
         print("Cannot open camera")
         exit()
 
+    #checking if the platform is mac or not
+    if "mac" in platform.platform().lower():
+        mac = True
+    else:
+        mac = False
+
+    #getting screen size
+    screen_width, screen_height = pyg.size()
+
+    #declaring variables
     yellow = [0,255,255]
     red = [0,0,255]
     blue = [255,0,0]
@@ -27,12 +39,12 @@ def generateWhiteBoard(cap,detector, WB_DELAY) -> int:
 
     #creating a whiteboard window
     cv.namedWindow('Whiteboard',cv.WND_PROP_FULLSCREEN)
-    cv.setWindowProperty('Whiteboard', cv.WND_PROP_FULLSCREEN, cv.WINDOW_FULLSCREEN)
+    # cv.setWindowProperty('Whiteboard', cv.WND_PROP_FULLSCREEN, cv.WINDOW_FULLSCREEN)
     cv.setWindowProperty('Whiteboard', cv.WND_PROP_TOPMOST, 1)
 
     #creating a window for the camera
     cv.namedWindow('Image',cv.WND_PROP_FULLSCREEN)
-    cv.setWindowProperty('Image', cv.WND_PROP_FULLSCREEN, cv.WINDOW_FULLSCREEN)
+    # cv.setWindowProperty('Image', cv.WND_PROP_FULLSCREEN, cv.WINDOW_FULLSCREEN)
     cv.setWindowProperty('Image', cv.WND_PROP_TOPMOST, 1)
 
     while(True):
@@ -54,12 +66,12 @@ def generateWhiteBoard(cap,detector, WB_DELAY) -> int:
             indexFinger = lmlist[8][0], lmlist[8][1]
 
             #interpolating the index finger position to the whiteboard
-            xInterp = int(np.interp(lmlist[8][0], [0, 640//2], [0, 1280]))
-            yInterp = int(np.interp(lmlist[8][1], [150, 480-150], [0, 720]))
+            xInterp = int(np.interp(lmlist[8][0], [50, 1024//2], [0, 1280]))
+            yInterp = int(np.interp(lmlist[8][1], [50, 400], [0, 720]))
             
-            #if the hand is right then interpolate the x coordinate from 0 to 640/2
-            if hands[0]["type"] == "Left":
-                xInterp = int(np.interp(lmlist[8][0], [640//2, 640], [0, 1280]))
+            # #if the hand is right then interpolate the x coordinate from 0 to 640/2
+            # if hands[0]["type"] == "Left":
+            #     xInterp = int(np.interp(lmlist[8][0], [640//2, 640], [0, 1280]))
             
             drawIndex = xInterp, yInterp
 
@@ -67,22 +79,22 @@ def generateWhiteBoard(cap,detector, WB_DELAY) -> int:
             fingers = detector.fingersUp(hands[0])
 
             #close whiteboard trigger
-            if (fingers == [0, 1, 0 , 0, 1] and wrist[1] > indexFinger[1]) and counter >= WB_DELAY:
+            if hands[0]["type"] == "Left" and (fingers == [0, 1, 0 , 0, 1] and wrist[1] > indexFinger[1]) and counter >= WB_DELAY:
                 cv.destroyWindow("Whiteboard")
                 return 0
             
             #if all fingers are closed then clear the screen
-            if fingers == [0, 0, 0, 0 ,0]:
+            if hands[0]["type"] == "Right" and fingers == [0, 0, 0, 0 ,0]:
                 drawCase = False
                 drawPoints.clear()
                 pointNum = -1
             
             #if 2 fingers are open then draw a circle on the index finger
-            if fingers == [0, 1, 1, 0 ,0] and  wrist[1] > indexFinger[1]:
+            if hands[0]["type"] == "Right" and fingers == [0, 1, 1, 0 ,0] and  wrist[1] > indexFinger[1]:
                 cv.circle(wBoard, drawIndex, 10, red, cv.FILLED)
             
             #if index finger is open then draw a line
-            if fingers == [0, 1, 0, 0 ,0] and  wrist[1] > indexFinger[1]:
+            if hands[0]["type"] == "Right" and fingers == [0, 1, 0, 0 ,0] and  wrist[1] > indexFinger[1]:
                 cv.circle(wBoard, drawIndex, 10, red, cv.FILLED)
                 #making a new array of points for a new line
                 if drawCase == False:
@@ -104,12 +116,15 @@ def generateWhiteBoard(cap,detector, WB_DELAY) -> int:
         #displaying the webcam
         # img = cv.resize(img, (1920,1080), interpolation = cv.INTER_CUBIC)
         cv.resizeWindow('Image', 320, 240)
-        cv.moveWindow('Image', 1920-320, 0)
+        if mac:
+            cv.moveWindow('Image', screen_width-320, -200)
+        else:
+            cv.moveWindow('Image', screen_width-320, 0)
         cv.imshow('Image', img)
 
         #displaying the whiteboard
         cv.resizeWindow('Whiteboard', 1280,720)
-        cv.moveWindow('Whiteboard', (1920-1280)//2, (1080-720)//2)
+        cv.moveWindow('Whiteboard', (screen_width-1280)//2, (screen_height-720)//2)
         cv.imshow("Whiteboard", cv.flip(wBoard, 1))
         
         #counter to add delay to the close whiteboard trigger
@@ -120,8 +135,8 @@ def generateWhiteBoard(cap,detector, WB_DELAY) -> int:
 
 if __name__ == '__main__':
     cap = cv.VideoCapture(0)
-    cap.set(3, 640)
-    cap.set(4, 480)
+    cap.set(3, 1024)
+    cap.set(4, 720)
     detector = HandDetector(detectionCon=0.3, maxHands= 1)
     generateWhiteBoard(cap, detector, 20)
 

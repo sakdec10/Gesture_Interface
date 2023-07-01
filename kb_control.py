@@ -86,7 +86,8 @@ def drawKB(cap,detector, WB_DELAY)-> str:
                     cv.rectangle(blended_img, (x-5, y-5), (x+w+5, y+h+5), black, cv.FILLED)
                     cv.putText(blended_img, key, (x+5, y+30), cv.FONT_HERSHEY_DUPLEX, 1, white, 2)
                     length, info= detector.findDistance(index_mcp, thumb_tip)
-                    if fingers == [1, 1, 1 , 0, 0] and length < 43 and counter > WB_DELAY:
+                    print(length)
+                    if length < 43 and counter > WB_DELAY:
                         counter = 10
                         if key == "<--":
                             kb_text = kb_text[:-1]

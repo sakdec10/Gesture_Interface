@@ -59,7 +59,7 @@ def generateWhiteBoard(cap,detector, WB_DELAY) -> int:
             exit()
 
         hands, img = detector.findHands(img)
-        cv.putText(img, "WhiteBoard", (10, 50), cv.FONT_HERSHEY_PLAIN, 2, red, 2)
+        cv.putText(img, "WhiteBoard", (10, 50), cv.FONT_HERSHEY_PLAIN, 3, red, 3)
 
         if hands:
             lmlist = hands[0]["lmList"]

@@ -49,8 +49,8 @@ def controlSystem(cap,detector, WB_DELAY) -> int:
             print("Cannot open camera")
             exit()
 
-        hands, img = detector.findHands(img)
-        cv.putText(img, "System Control", (10, 50), cv.FONT_HERSHEY_PLAIN, 2, red, 2)
+        hands, img = detector.findHands(img, flipType=True, draw=True)
+        cv.putText(img, "System Control", (10, 50), cv.FONT_HERSHEY_PLAIN, 3, blue, 3)
 
         if hands:
             lmlist = hands[0]["lmList"]
@@ -70,7 +70,7 @@ def controlSystem(cap,detector, WB_DELAY) -> int:
                     # cv.rectangle(img, (420, 100), (600, 300), red, 2)
                     # xMouse = np.interp(indexFinger[0], (420, 640-100), (0, 1920))
                     # yMouse = np.interp(indexFinger[1], (100, 480-200), (0, 1080))
-                    xMouse = int(np.interp(lmlist[8][0], [50, 1024//2], [0, screen_width]))
+                    xMouse = int(np.interp(lmlist[8][0], [50, 1024//2], [screen_width, 0]))
                     yMouse = int(np.interp(lmlist[8][1], [50, 400], [0, screen_height]))
                     cv.circle(img, indexFinger, 10, yellow, cv.FILLED)
 

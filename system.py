@@ -4,6 +4,7 @@ from cvzone.HandTrackingModule import HandDetector
 import mediapipe as mp
 import pyautogui as pyg
 import platform
+import kb_control as kb
 # import autopy as ap
 
 def controlSystem(cap,detector, WB_DELAY) -> int:
@@ -33,6 +34,7 @@ def controlSystem(cap,detector, WB_DELAY) -> int:
 
     #mouse variables
     mouseCounter = 10
+    pollingRate = 0
     plockX, plockY = 0, 0
     clockX, clockY = 0, 0
 
@@ -47,8 +49,8 @@ def controlSystem(cap,detector, WB_DELAY) -> int:
             print("Cannot open camera")
             exit()
 
-        hands, img = detector.findHands(img)
-        cv.putText(img, "System Control", (10, 50), cv.FONT_HERSHEY_PLAIN, 2, red, 2)
+        hands, img = detector.findHands(img, flipType=True, draw=True)
+        cv.putText(img, "System Control", (10, 50), cv.FONT_HERSHEY_PLAIN, 3, blue, 3)
 
         if hands:
             lmlist = hands[0]["lmList"]
@@ -63,11 +65,12 @@ def controlSystem(cap,detector, WB_DELAY) -> int:
 
             # mouseMove trigger
             if hands[0]["type"] == "Right":
-                if fingers == [0, 1, 0, 0 ,0] and  wrist[1] > indexFinger[1]:
+                if fingers == [0, 1, 0, 0 ,0] and  wrist[1] > indexFinger[1] and pollingRate >= 1:
+                    pollingRate = 0
                     # cv.rectangle(img, (420, 100), (600, 300), red, 2)
                     # xMouse = np.interp(indexFinger[0], (420, 640-100), (0, 1920))
                     # yMouse = np.interp(indexFinger[1], (100, 480-200), (0, 1080))
-                    xMouse = int(np.interp(lmlist[8][0], [50, 1024//2], [0, screen_width]))
+                    xMouse = int(np.interp(lmlist[8][0], [50, 1024//2], [screen_width, 0]))
                     yMouse = int(np.interp(lmlist[8][1], [50, 400], [0, screen_height]))
                     cv.circle(img, indexFinger, 10, yellow, cv.FILLED)
 
@@ -86,6 +89,12 @@ def controlSystem(cap,detector, WB_DELAY) -> int:
                 elif (fingers == [0, 0, 0, 0 ,1] or  fingers == [0, 1, 0, 0 ,1]) and mouseCounter >= WB_DELAY:
                     mouseCounter = 0
                     pyg.click(button='right')
+                
+                if fingers == [1, 1, 1 , 0, 0] and mouseCounter >= WB_DELAY+7:
+                    mouseCounter = 0
+                    kb_text = kb.drawKB(cap, detector, WB_DELAY)
+                    print(kb_text)
+                    pyg.write(kb_text, interval=0.1)
                     
 
 
@@ -109,6 +118,7 @@ def controlSystem(cap,detector, WB_DELAY) -> int:
         #counter to add delay to the close whiteboard trigger
         counter+=1
         mouseCounter+=1
+        pollingRate+=1
         
         if c == 27:
             break

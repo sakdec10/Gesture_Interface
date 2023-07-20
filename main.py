@@ -62,6 +62,7 @@ def main():
     mouseCounter = 10
     plockX, plockY = 0, 0
     clockX, clockY = 0, 0
+    handBox = False
 
     #button Variables
     buttonCounter = 10
@@ -99,6 +100,8 @@ def main():
         if hands:
             #getting list of hand landmarks
             lmlist = hands[0]["lmList"] 
+            bbox1 = hands[0]["bbox"]
+            bby = bbox1[1]
 
             #getting coordinates of landmarks                            
             indexFinger = lmlist[8][0], lmlist[8][1]
@@ -111,19 +114,24 @@ def main():
             fingers = detector.fingersUp(hands[0])
 
             if (fingers == [1, 1, 1, 1, 1] and wrist[1] > indexFinger[1]) and counter >= WB_DELAY:
-                cv.circle(img, (middleFinger[0], middleFinger[1]-20), 5, yellow, 2)
+                cv.circle(img, (middleFinger[0], bby-20), 5, yellow, 2)
                 redThickNess  = greenThickNess = blueThickNess = 12
+                if handBox == False:
+                    handBox = True
+                    redPointx = indexFinger[0]+ 10
+                    greenPointx = ringFinger[0]
+                    bluePointx = pinkyFinger[0] - 10
+                redPoint = redPointx, bby-20
+                greenPoint = greenPointx, bby-20
+                bluePoint = bluePointx, bby-20
                 if drawCase == False:
-                    cv.waitKey(100)
+                    # cv.waitKey(100)
                     drawCase = True
-                    redPoint = indexFinger[0], indexFinger[1]-20
-                    greenPoint = ringFinger[0], ringFinger[1]-20
-                    bluePoint = pinkyFinger[0], pinkyFinger[1]-20
                     redCase = False
                     greenCase = False
                     blueCase = False
 
-                if Math.sqrt((redPoint[0]-middleFinger[0])**2 + (redPoint[1]-(middleFinger[1]-20))**2) <= 12:
+                if 0 <= Math.sqrt((redPoint[0]-middleFinger[0])**2 + (redPoint[1]-(bby-20))**2) <= 12:
                     redThickNess = 15
 
                     if redCase == False: 
@@ -139,7 +147,7 @@ def main():
                         print("Whiteboard")
                         counter = wh.generateWhiteBoard(cap,detector, WB_DELAY)
 
-                elif Math.sqrt((greenPoint[0]-middleFinger[0])**2 + (greenPoint[1]-(middleFinger[1]-20))**2) <= 12:
+                elif 0 <= Math.sqrt((greenPoint[0]-middleFinger[0])**2 + (greenPoint[1]-(bby-20))**2) <= 12:
                     greenThickNess = 15
 
                     if greenCase == False: 
@@ -154,7 +162,7 @@ def main():
                         buttonCounter = 0
                         print("ASL Typing")
 
-                elif Math.sqrt((bluePoint[0]-middleFinger[0])**2 + (bluePoint[1]-(middleFinger[1]-20))**2) <= 12:
+                elif 0 <= Math.sqrt((bluePoint[0]-middleFinger[0])**2 + (bluePoint[1]-(bby-20))**2) <= 12:
                     blueThickNess = 15
 
                     if blueCase == False:
@@ -179,9 +187,7 @@ def main():
             
             else:
                 drawCase = False
-
-
-
+                handBox = False
 
             #condition for exiting the program
             # if fingers == [1, 1, 1, 1, 1] and counter >= WB_DELAY:
@@ -192,36 +198,6 @@ def main():
             #     length3, info = detector.findDistance(pinkyFinger, ringFinger)
             #     if length1 <=30 and length2 >=50 and length3 <=45:
             #         textDisplay = "Live Long and Prosper"
-
-            #whiteboard trigger
-            # if (fingers == [0, 1, 0 , 0, 1] and wrist[1] > indexFinger[1]) and counter >= WB_DELAY and hands[0]["type"] == "Right":
-            #     drawPoints.clear()
-            #     pointNum = -1
-            #     drawCase = False
-            #     counter = wh.generateWhiteBoard(cap,detector, WB_DELAY)
-            
-            # # mouseMove trigger
-            # if hands[0]["type"] == "Left":
-            #     textDisplay = "Mouse Mode"
-            #     if fingers == [0, 1, 0, 0 ,0] and  wrist[1] > indexFinger[1]:
-            #         cv.rectangle(img, (420, 100), (600, 300), red, 2)
-            #         xMouse = np.interp(indexFinger[0], (420, 640-100), (0, 1920))
-            #         yMouse = np.interp(indexFinger[1], (100, 480-200), (0, 1080))
-            #         cv.circle(img, indexFinger, 10, yellow, cv.FILLED)
-
-            #         #smoothing the mouse movement
-            #         clockX = plockX + (xMouse - plockX) / 5
-            #         clockY = plockY + (yMouse - plockY) / 5
-
-            #         ap.mouse.move(1920-clockX, clockY)
-            #         plockX, plockY = clockX, clockY
-            #     if (fingers == [1, 0, 0, 0 ,0] or fingers == [1, 1, 0, 0 ,0]) and mouseCounter >= WB_DELAY:
-            #         mouseCounter = 0
-            #         ap.mouse.click()
-            #     elif (fingers == [0, 0, 0, 0 ,1] or  fingers == [0, 1, 0, 0 ,1]) and mouseCounter >= WB_DELAY:
-            #         mouseCounter = 0
-            #         ap.mouse.click(ap.mouse.Button.RIGHT)
-                    
 
             #if all fingers are closed then clear the screen
             # if fingers == [0, 0, 0, 0 ,0] and hands[0]["type"] == "Right":
@@ -256,9 +232,6 @@ def main():
             if pose_points[14].y < pose_points[12].y or pose_points[16].y < pose_points[14].y:
                 poseText = "Right Arm Up"
                 # print("Right Arm Up")
-
-
-
 
         c = cv.waitKey(1)
 

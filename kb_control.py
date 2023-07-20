@@ -33,12 +33,13 @@ def drawKB(cap,detector, WB_DELAY)-> str:
     cv.namedWindow('Image',cv.WND_PROP_FULLSCREEN)
     cv.setWindowProperty('Image', cv.WND_PROP_TOPMOST, 1)
 
-    qkeys = [["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "<--"],
+    qkeys = [["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-"],
+            ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "<--"],
             ["A", "S", "D", "F", "G", "H", "J", "K", "L", ";", "'"],
             ["Z", "X", "C", "V", "B", "N", "M", ",", ".", "/", "Done"]]
 
     keylist = []
-    for i in range(3):
+    for i in range(4):
         for j in range(11):
             keylist.append([j*50+25, i*55+200, qkeys[i][j]])
             if qkeys[i][j] == 'Z':

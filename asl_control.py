@@ -7,12 +7,14 @@ import platform
 import os
 import pickle
 
-def drawKB(cap,detector, WB_DELAY)-> str:
+def generateASL(cap,detector, WB_DELAY)-> str:
 
     #camera not opened
     if not cap.isOpened():
         print("Cannot open camera")
         exit()
+    
+    WB_DELAY = 30
 
     #checking if the platform is mac or not
     if "mac" in platform.platform().lower():
@@ -29,35 +31,21 @@ def drawKB(cap,detector, WB_DELAY)-> str:
     gray = [128,128,128]
     green = [0,255,0]
     counter = 0
-    kb_text = ""
-    kb_text_posx, kb_text_posy = 0, 0
+    asl_text = ""
+    aslTextX, aslTextY = 15, 200
+    temp_pred = ""
 
     #creating a window for the camera
     cv.namedWindow('Image',cv.WND_PROP_FULLSCREEN)
     cv.setWindowProperty('Image', cv.WND_PROP_TOPMOST, 1)
 
-    qkeys = [["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "-"],
-            ["Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P", "<--"],
-            ["A", "S", "D", "F", "G", "H", "J", "K", "L", ";", "'"],
-            ["Z", "X", "C", "V", "B", "N", "M", ",", ".", "/", "Done"]]
-
-    keylist = []
-    for i in range(4):
-        for j in range(11):
-            keylist.append([j*50+25, i*55+100, qkeys[i][j]])
-            if qkeys[i][j] == 'Z':
-                kb_text_posx = j*50+25
-                kb_text_posy = i*55+290
-
-    def drawkb(img, keylist):
-        for key in keylist:
-            x, y, key = key
-            if key == "Done" or key == "<--":
-                cv.rectangle(img, (x, y), (x+85, y+45), gray, cv.FILLED)
-            else:
-                cv.rectangle(img, (x, y), (x+35, y+45), gray, cv.FILLED)
-            cv.putText(img, key, (x+5, y+30), cv.FONT_HERSHEY_DUPLEX, 1, white, 2)
-        return img                                                         
+    #prediction variables
+    model_dict = pickle.load(open('./model.p', 'rb'))
+    model = model_dict['model']
+    labels_dict = {0: "A", 1: "B", 2: "C" , 3: "D", 4: "E", 5: 'F', 6: 'G', 7: 'H', 
+                   8: 'I', 9: 'K', 10: 'L', 11: 'M', 12: 'N' , 13: 'O', 14: 'P', 
+                   15: 'Q', 16: 'R', 17: 'S', 18: 'T', 19: 'U', 20: 'V', 21: 'W',
+                   22: 'X', 23: 'Y'}                          
 
     while(True):
         success, img = cap.read()
@@ -67,46 +55,56 @@ def drawKB(cap,detector, WB_DELAY)-> str:
             exit()
         
         hands, img = detector.findHands(img)
-        cv.putText(img, "ASL Typing", (10, 50), cv.FONT_HERSHEY_PLAIN, 3, green, 3)
-
+        
         backg = np.ones_like(img, np.uint8)
         backg = backg * 255
         blended_img = cv.addWeighted(backg, 0.5, img, 0.5, 0)
-        blended_img = drawkb(blended_img, keylist)
+        data_aux = []
+
+        cv.putText(blended_img, "ASL Typing", (1024//2-150, 20), cv.FONT_HERSHEY_PLAIN, 1, green, 1)
 
         if hands:
-            lmlist = hands[0]["lmList"]
-            indexFinger = lmlist[8][0], lmlist[8][1]
-            wrist = lmlist[0][0], lmlist[0][1]
-            thumb_tip = lmlist[4][0], lmlist[4][1]
-            index_mcp = lmlist[5][0], lmlist[5][1]
+            temp_lmlist = hands[0]["lmList"]
+            indexFinger = temp_lmlist[8][0], temp_lmlist[8][1]
+            wrist = temp_lmlist[0][0], temp_lmlist[0][1]
             fingers = detector.fingersUp(hands[0])
 
-            for key in keylist:
-                w, h = 35, 45
-                x, y, key = key
-                if key == "Done" or key == "<--":
-                    w, h = 85, 45
-                if x < indexFinger[0] < x+w and y < indexFinger[1] < y+h:
-                    cv.rectangle(blended_img, (x-5, y-5), (x+w+5, y+h+5), black, cv.FILLED)
-                    cv.putText(blended_img, key, (x+5, y+30), cv.FONT_HERSHEY_DUPLEX, 1, white, 2)
-                    length, info= detector.findDistance(index_mcp, thumb_tip)
-                    print(length)
-                    if length < 20 and counter > WB_DELAY:
-                        counter = 10
-                        if key == "<--":
-                            kb_text = kb_text[:-1]
-                        elif key == "Done":
-                            print(kb_text)
-                            return kb_text
-                        else:
-                            kb_text += key
-                    
-                cv.putText(blended_img, kb_text, (kb_text_posx, kb_text_posy), cv.FONT_HERSHEY_DUPLEX, 1, black, 2)
-                        
+            #closing asl typing
+            if hands[0]["type"] == "Left":
+                if (fingers == [0, 1, 0 , 0, 1] and wrist[1] > indexFinger[1]) and counter >= WB_DELAY:
+                    return 0
 
+            #for asl typing
+            if hands[0]["type"] == "Right":
+                lmlist = np.array(hands[0]["lmList"])
+                for i in range(len(lmlist)):
+                    x = lmlist[i][0]
+                    y = lmlist[i][1]
+                    data_aux.append(x)
+                    data_aux.append(y)
+                
+                #prediction of the model
+                prediction = model.predict([np.asarray(data_aux)])
+                predicted_character = labels_dict[int(prediction[0])]
+                # cv.putText(blended_img, predicted_character, (15,12), 
+                #                     cv.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1, cv.LINE_AA)
+                
+                #adding the predicted character to the asl_text
+                if temp_pred != predicted_character:
+                    counter = 0
+                    temp_pred = predicted_character
+                else:
+                    if counter > WB_DELAY:
+                        asl_text += predicted_character
+                        counter = 0
+
+        #displaying the increasing text
+        cv.rectangle(blended_img, (aslTextX, aslTextY-30), (aslTextX+(20*len(asl_text)), aslTextY+10), black, cv.FILLED)
+        if not hands: temp_pred = ""           
+        cv.putText(blended_img, asl_text+temp_pred,  (aslTextX, aslTextY), 
+                                    cv.FONT_HERSHEY_DUPLEX, 1, white, 1, cv.LINE_AA)   
         c = cv.waitKey(1)
-        img = cv.resize(blended_img, (1920,1080), interpolation = cv.INTER_CUBIC)
+        img = cv.resize(blended_img, (screen_width,screen_height), interpolation = cv.INTER_CUBIC)
         img = cv.flip(img, 1)
         cv.resizeWindow('Image', screen_width, screen_height)
         if mac:
@@ -125,5 +123,5 @@ if __name__ == '__main__':
     cap = cv.VideoCapture(0)
     cap.set(3, 1024)
     cap.set(4, 720)
-    detector = HandDetector(detectionCon=0.3, maxHands= 1)
-    drawKB(cap, detector, 20)
+    detector = HandDetector(detectionCon=0.7, maxHands= 1)
+    generateASL(cap, detector, 20)

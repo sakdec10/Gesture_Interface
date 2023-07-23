@@ -102,7 +102,7 @@ def drawKB(cap,detector, WB_DELAY)-> str:
                         
 
         c = cv.waitKey(1)
-        img = cv.resize(blended_img, (1920,1080), interpolation = cv.INTER_CUBIC)
+        img = cv.resize(blended_img, (screen_width,screen_height), interpolation = cv.INTER_CUBIC)
         img = cv.flip(img, 1)
         cv.resizeWindow('Image', screen_width, screen_height)
         if mac:

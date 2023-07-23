@@ -41,7 +41,7 @@ def drawKB(cap,detector, WB_DELAY)-> str:
     keylist = []
     for i in range(4):
         for j in range(11):
-            keylist.append([j*50+25, i*55+200, qkeys[i][j]])
+            keylist.append([j*50+25, i*55+100, qkeys[i][j]])
             if qkeys[i][j] == 'Z':
                 kb_text_posx = j*50+25
                 kb_text_posy = i*55+290
@@ -88,7 +88,7 @@ def drawKB(cap,detector, WB_DELAY)-> str:
                     cv.putText(blended_img, key, (x+5, y+30), cv.FONT_HERSHEY_DUPLEX, 1, white, 2)
                     length, info= detector.findDistance(index_mcp, thumb_tip)
                     print(length)
-                    if length < 43 and counter > WB_DELAY:
+                    if length < 20 and counter > WB_DELAY:
                         counter = 10
                         if key == "<--":
                             kb_text = kb_text[:-1]

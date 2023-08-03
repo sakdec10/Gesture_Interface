@@ -61,7 +61,7 @@ def generateASL(cap,detector, WB_DELAY)-> str:
         blended_img = cv.addWeighted(backg, 0.5, img, 0.5, 0)
         data_aux = []
 
-        cv.putText(blended_img, "ASL Typing", (1024//2-150, 20), cv.FONT_HERSHEY_PLAIN, 1, green, 1)
+        cv.putText(blended_img, "ASL Typing", (0, 20), cv.FONT_HERSHEY_PLAIN, 2, green, 2)
 
         if hands:
             temp_lmlist = hands[0]["lmList"]
@@ -99,10 +99,10 @@ def generateASL(cap,detector, WB_DELAY)-> str:
                         counter = 0
 
         #displaying the increasing text
-        cv.rectangle(blended_img, (aslTextX, aslTextY-30), (aslTextX+(20*len(asl_text)), aslTextY+10), black, cv.FILLED)
+        cv.rectangle(blended_img, (aslTextX, aslTextY-30), (aslTextX+(20*len(asl_text)), aslTextY+10), white, cv.FILLED)
         if not hands: temp_pred = ""           
         cv.putText(blended_img, asl_text+temp_pred,  (aslTextX, aslTextY), 
-                                    cv.FONT_HERSHEY_DUPLEX, 1, white, 1, cv.LINE_AA)   
+                                    cv.FONT_HERSHEY_DUPLEX, 1, black, 1, cv.LINE_AA)   
         c = cv.waitKey(1)
         img = cv.resize(blended_img, (screen_width,screen_height), interpolation = cv.INTER_CUBIC)
         img = cv.flip(img, 1)

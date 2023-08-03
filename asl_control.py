@@ -61,7 +61,7 @@ def generateASL(cap,detector, WB_DELAY)-> str:
         blended_img = cv.addWeighted(backg, 0.5, img, 0.5, 0)
         data_aux = []
 
-        cv.putText(blended_img, "ASL Typing", (0, 20), cv.FONT_HERSHEY_PLAIN, 2, green, 2)
+        cv.putText(blended_img, "ASL Typing", (0, 30), cv.FONT_HERSHEY_PLAIN, 2, green, 2)
 
         if hands:
             temp_lmlist = hands[0]["lmList"]

@@ -11,6 +11,7 @@ from cvzone.HandTrackingModule import HandDetector
 import mediapipe as mp
 import whiteboard as wh
 import system as sys
+import asl_control as asl
 import math as Math
 import pyautogui as pyg
 import time
@@ -161,6 +162,7 @@ def main():
                     if buttonCounter >= WB_DELAY:
                         buttonCounter = 0
                         print("ASL Typing")
+                        counter = asl.generateASL(cap,detector, WB_DELAY)
 
                 elif 0 <= Math.sqrt((bluePoint[0]-middleFinger[0])**2 + (bluePoint[1]-(bby-20))**2) <= 12:
                     blueThickNess = 15

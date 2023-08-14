@@ -1,6 +1,6 @@
 # OpenCV_Gestures
 
-Hand Gesture recognition using OpenCV to help during Video calls
+This project deals with creating a Gesture Interface that would allow users to interact with their systems by making various gestures with their hands. It uses a combination of Machine Learning and Deep Learning Models to identify landmark points on hands and body.
 
 ## Download and setup
 Python Version - 3.8.*

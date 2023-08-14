@@ -74,7 +74,7 @@ def generateASL(cap,detector, WB_DELAY)-> str:
                 if (fingers == [0, 1, 0 , 0, 1] and wrist[1] > indexFinger[1]) and counter >= WB_DELAY:
                     return 0
 
-            #for asl typing
+            #storing the coordinates of the hand
             if hands[0]["type"] == "Right":
                 lmlist = np.array(hands[0]["lmList"])
                 for i in range(len(lmlist)):
